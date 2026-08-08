@@ -1,3 +1,11 @@
+[australia_submarine_cables_2021]
+git-tree-sha1 = "6276f9911e418b762aea605cadab27a51678ebba"
+lazy = true
+
+    [[australia_submarine_cables_2021.download]]
+    sha256 = "1b2ed4e36a3011f9c0fc3cc203e206b21d4e3c0ad79170cefebcf9367c7ef500"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6276f9911e418b762aea605cadab27a51678ebba.tar.gz"
+
 [internet_topology_zoo]
 git-tree-sha1 = "6a1a465b666d3410aaa15783579f0ed491777763"
 lazy = true
