@@ -241,13 +241,13 @@ function _validate_edges(table, path, dataset_id, network_id, node_count)
 end
 
 function _validate_loaded(graph, distances, nodes, edges, summary, dataset_id, network_id, path)
-    nv(graph) == nrow(nodes) == summary.node_count || _invalid(
+    Graphs.nv(graph) == nrow(nodes) == summary.node_count || _invalid(
         dataset_id,
         network_id,
         path,
         "node count disagrees with networks.csv",
     )
-    ne(graph) == nrow(edges) == summary.edge_count || _invalid(
+    Graphs.ne(graph) == nrow(edges) == summary.edge_count || _invalid(
         dataset_id,
         network_id,
         path,
