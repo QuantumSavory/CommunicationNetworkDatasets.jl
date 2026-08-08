@@ -112,11 +112,13 @@ function load_network(dataset_id::AbstractString, network_id::AbstractString)
     return (; graph, distances, nodes, edges)
 end
 
-@declare_method_is_in_extension WEAKDEP_CACHE plot_network (:Tyler, :Makie) """
+@declare_method_is_in_extension WEAKDEP_CACHE plot_network (:Tyler, :CairoMakie) """
     plot_network(args...; kwargs...)
 
-Plot a network in WGS84 coordinates. This method is supplied by the Tyler extension. Import Tyler
-and a Makie backend before calling it. The caller owns the returned Tyler map and must close it.
+Plot a network in WGS84 coordinates. Accept either dataset and network identifiers or the named
+tuple returned by [`load_network`](@ref). The Tyler extension is loaded after importing Tyler and a
+Makie backend. It returns `(; figure, axis, map, node_plot, edge_plot, omitted_vertices,
+omitted_edges)`. The caller owns the returned Tyler map and must wait for or close it when needed.
 """
 
 function __init__()
