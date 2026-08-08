@@ -4,6 +4,7 @@ docs/src/generated/
 staging/
 data_sources/*/downloads/
 data_sources/*/output/
+data_sources/*/Manifest.toml
 *.cov
 *.jl.cov
 *.jl.*.cov
