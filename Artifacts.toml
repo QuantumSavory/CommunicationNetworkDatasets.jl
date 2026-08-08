@@ -1,3 +1,11 @@
+[internet_topology_zoo]
+git-tree-sha1 = "6a1a465b666d3410aaa15783579f0ed491777763"
+lazy = true
+
+    [[internet_topology_zoo.download]]
+    sha256 = "0f1b348bb345351c6637faa0710d783a0d160361a1758d8ab045d175ca4a1f88"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6a1a465b666d3410aaa15783579f0ed491777763.tar.gz"
+
 [topology_bench]
 git-tree-sha1 = "c8afff85bd6ea652cca160a7794182ce0e3bd3ad"
 lazy = true
