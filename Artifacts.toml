@@ -21,3 +21,11 @@ lazy = true
     [[topology_bench.download]]
     sha256 = "884fa6b972a81bffdf01b463f5183a80564ceb39dda92cad65429d2849781594"
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/c8afff85bd6ea652cca160a7794182ce0e3bd3ad.tar.gz"
+
+[vermont_state_fibre]
+git-tree-sha1 = "00c15f0297e31de8c266ca3e0d31a75324836811"
+lazy = true
+
+    [[vermont_state_fibre.download]]
+    sha256 = "00929b6f8cb184829ade25103eef3bdc28c564b6312ad70073ae6f8245696244"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/00c15f0297e31de8c266ca3e0d31a75324836811.tar.gz"
