@@ -46,6 +46,14 @@ lazy = true
     sha256 = "0f1b348bb345351c6637faa0710d783a0d160361a1758d8ab045d175ca4a1f88"
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6a1a465b666d3410aaa15783579f0ed491777763.tar.gz"
 
+[natural_earth_basemap]
+git-tree-sha1 = "954b52b10bc10268a08afa8854add3ce03a56f14"
+lazy = true
+
+    [[natural_earth_basemap.download]]
+    sha256 = "797153d8f5cb3329274b928b8e3ebc3c5436e84bb753222696f3af9aa89b409b"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/954b52b10bc10268a08afa8854add3ce03a56f14.tar.gz"
+
 [open_undersea_cable_map]
 git-tree-sha1 = "90aa9e53facefd051a19529e8e2ac853950bf228"
 lazy = true
