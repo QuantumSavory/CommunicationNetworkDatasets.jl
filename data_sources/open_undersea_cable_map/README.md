@@ -24,12 +24,12 @@ julia --project=../.. ../../data_sources/validate.jl open_undersea_cable_map \
 ```
 
 Landing membership comes only from each cable metadata file. Each landing is matched to the nearest
-vertex of that cable's stylized route, and every match distance is retained. A matched route vertex
-is replaced by the authoritative landing coordinate. Exact route endpoints, shared vertices, and
-explicit landing matches define topology; visual crossings are not connected. When two landing
-records map to one route vertex, both remain distinct and the additional landing is joined by a
-two-point derived branch. Multipart routes are split into graph edges, while their shape vertices
-remain in `geometry_wkt`.
+vertex of that cable's stylized route, and every match distance and published landing coordinate is
+retained. The route vertex remains the public graph coordinate so route WKT is not altered. Exact
+route endpoints, shared vertices, and explicit landing matches define topology; visual crossings
+are not connected. The two `eac-c2c` landing records that map to one route vertex both remain
+distinct, with the second retained as an audited isolate instead of inventing a source connection.
+Multipart routes are split into graph edges, while their shape vertices remain in `geometry_wkt`.
 
 Per-edge distances are geodesic calculations along the published or derived polyline. The reported
 whole-system length is retained only as network metadata and is never assigned to an edge. Routes

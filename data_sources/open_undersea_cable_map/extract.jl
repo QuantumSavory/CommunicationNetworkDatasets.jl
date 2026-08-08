@@ -59,12 +59,16 @@ landing_geometry = JSON3.read(read(landing_geo_path, String))
 length(cable_geometry.features) == 527 || error("expected 527 cable geometry features")
 length(landing_geometry.features) == 1_414 || error("expected 1,414 landing geometries")
 
-landing_coordinates = Dict{String,Tuple{Float64,Float64}}()
+landing_records = Dict{String,NamedTuple}()
 for feature in landing_geometry.features
     feature.geometry.type == "Point" || error("landing $(feature.properties.id) is not a Point")
     id = String(feature.properties.id)
-    haskey(landing_coordinates, id) && error("duplicate landing geometry $(id)")
-    landing_coordinates[id] = coordinate(feature.geometry.coordinates)
+    haskey(landing_records, id) && error("duplicate landing geometry $(id)")
+    landing_records[id] = (;
+        coordinate=coordinate(feature.geometry.coordinates),
+        is_tbd=get(feature.properties, :is_tbd, nothing),
+        attributes_json=String(JSON3.write(feature.properties)),
+    )
 end
 
 geometry_by_cable = Dict{String,Vector{Any}}()
@@ -96,12 +100,12 @@ for (metadata, network_id) in zip(included, network_ids)
     matches = NamedTuple[]
     for landing in metadata.landing_points
         landing_id = String(landing.id)
-        haskey(landing_coordinates, landing_id) || error("$(cable_id): missing landing geometry $(landing_id)")
-        landing_coordinate = landing_coordinates[landing_id]
-        distances = [haversine_m(landing_coordinate[1], landing_coordinate[2], vertex[1], vertex[2])
+        haskey(landing_records, landing_id) || error("$(cable_id): missing landing geometry $(landing_id)")
+        landing_record = landing_records[landing_id]
+        distances = [haversine_m(landing_record.coordinate[1], landing_record.coordinate[2], vertex[1], vertex[2])
             for vertex in vertices]
         distance_m, index = findmin(distances)
-        push!(matches, (; landing, coordinate=landing_coordinate,
+        push!(matches, (; landing, landing_record,
             route_coordinate=vertices[index], distance_m))
     end
     sort!(matches; by=match -> String(match.landing.id))
@@ -113,14 +117,13 @@ for (metadata, network_id) in zip(included, network_ids)
     primary_by_route = Dict(route_coordinate => first(sort!(candidates;
         by=matched -> (matched.distance_m, String(matched.landing.id))))
         for (route_coordinate, candidates) in matches_by_route)
-    replacement = Dict(route_coordinate => matched.coordinate for (route_coordinate, matched) in primary_by_route)
     records = NamedTuple[]
     for (feature_index, feature) in enumerate(features), (part_index, part) in enumerate(feature.geometry.coordinates)
         source_id = String(feature.properties.feature_id)
         push!(records, (;
             source_id="$(source_id)_part_$(part_index)_feature_$(feature_index)",
             name,
-            coordinates=[get(replacement, coordinate(point), coordinate(point)) for point in part],
+            coordinates=coordinate.(part),
             source_attributes_json=String(JSON3.write(feature.properties)),
         ))
     end
@@ -130,84 +133,74 @@ for (metadata, network_id) in zip(included, network_ids)
         node_note="Derived from a stylized source route endpoint, junction, or explicit landing match.",
         distance_method="geodesic_polyline",
         distance_note="Calculated along the stylized WGS84 cable route; the reported system total is metadata only.",
-        forced_node_coordinates=Set(values(replacement)),
+        forced_node_coordinates=Set(keys(primary_by_route)),
     )
 
     nodes = normalized.nodes
     nodes[!, :landing_point_id] = missing_column(String, nrow(nodes))
     nodes[!, :country] = missing_column(String, nrow(nodes))
-    nodes[!, :is_tbd] = missing_column(Bool, nrow(nodes))
+    nodes[!, :membership_is_tbd] = missing_column(Bool, nrow(nodes))
+    nodes[!, :landing_point_is_tbd] = missing_column(Bool, nrow(nodes))
+    nodes[!, :source_longitude_deg] = missing_column(Float64, nrow(nodes))
+    nodes[!, :source_latitude_deg] = missing_column(Float64, nrow(nodes))
     nodes[!, :route_match_distance_m] = missing_column(Float64, nrow(nodes))
+    nodes[!, :membership_attributes_json] = missing_column(String, nrow(nodes))
     nodes[!, :source_landing_attributes_json] = missing_column(String, nrow(nodes))
     vertex_by_coordinate = Dict((Float64(row.longitude_deg), Float64(row.latitude_deg)) => Int(row.vertex)
         for row in eachrow(nodes))
 
-    primary_by_coordinate = Dict{Tuple{Float64,Float64},Vector{NamedTuple}}()
-    for matched in values(primary_by_route)
-        push!(get!(primary_by_coordinate, matched.coordinate, NamedTuple[]), matched)
-    end
     attached_landing_ids = Set{String}()
-    for (landing_coordinate, candidates) in primary_by_coordinate
-        matched = first(sort!(candidates; by=candidate -> (candidate.distance_m, String(candidate.landing.id))))
-        vertex = vertex_by_coordinate[landing_coordinate]
+    for (route_coordinate, matched) in sort!(collect(primary_by_route); by=first)
+        vertex = vertex_by_coordinate[route_coordinate]
         landing_id = String(matched.landing.id)
         nodes.node_id[vertex] = "landing_$(slug(landing_id))"
         nodes.name[vertex] = String(matched.landing.name)
-        nodes.coordinate_method[vertex] = "published_landing_matched_to_route"
+        nodes.coordinate_method[vertex] = "stylized_route_vertex_matched_to_landing"
         nodes.note[vertex] = "Explicit cable landing matched to the nearest stylized route vertex at $(matched.distance_m) m."
         nodes.landing_point_id[vertex] = landing_id
         landing_country = get(matched.landing, :country, nothing)
-        landing_is_tbd = get(matched.landing, :is_tbd, nothing)
+        membership_is_tbd = get(matched.landing, :is_tbd, nothing)
         nodes.country[vertex] = isnothing(landing_country) ? missing : string(landing_country)
-        nodes.is_tbd[vertex] = isnothing(landing_is_tbd) ? missing : Bool(landing_is_tbd)
+        nodes.membership_is_tbd[vertex] = isnothing(membership_is_tbd) ? missing : Bool(membership_is_tbd)
+        nodes.landing_point_is_tbd[vertex] = isnothing(matched.landing_record.is_tbd) ? missing : Bool(matched.landing_record.is_tbd)
+        nodes.source_longitude_deg[vertex] = matched.landing_record.coordinate[1]
+        nodes.source_latitude_deg[vertex] = matched.landing_record.coordinate[2]
         nodes.route_match_distance_m[vertex] = matched.distance_m
-        nodes.source_landing_attributes_json[vertex] = String(JSON3.write(matched.landing))
+        nodes.membership_attributes_json[vertex] = String(JSON3.write(matched.landing))
+        nodes.source_landing_attributes_json[vertex] = matched.landing_record.attributes_json
         push!(attached_landing_ids, landing_id)
     end
 
-    edges = normalized.edges
     for matched in matches
         landing_id = String(matched.landing.id)
         landing_id in attached_landing_ids && continue
-        anchor_coordinate = replacement[matched.route_coordinate]
-        src_vertex = vertex_by_coordinate[anchor_coordinate]
         dst_vertex = nrow(nodes) + 1
         landing_country = get(matched.landing, :country, nothing)
-        landing_is_tbd = get(matched.landing, :is_tbd, nothing)
+        membership_is_tbd = get(matched.landing, :is_tbd, nothing)
         push!(nodes, (;
             vertex=dst_vertex,
             node_id="landing_$(slug(landing_id))",
             name=String(matched.landing.name),
-            longitude_deg=matched.coordinate[1],
-            latitude_deg=matched.coordinate[2],
-            coordinate_method="published_landing_matched_to_route",
-            note="Explicit landing retained as a distinct node because another landing maps to the same stylized route vertex.",
+            longitude_deg=matched.landing_record.coordinate[1],
+            latitude_deg=matched.landing_record.coordinate[2],
+            coordinate_method="published_landing_coordinate",
+            note="Explicit landing retained as an isolate because another landing maps to the same stylized route vertex; no source connection was invented.",
             source_feature_ids="landing_$(landing_id)",
             landing_point_id=landing_id,
             country=isnothing(landing_country) ? missing : string(landing_country),
-            is_tbd=isnothing(landing_is_tbd) ? missing : Bool(landing_is_tbd),
+            membership_is_tbd=isnothing(membership_is_tbd) ? missing : Bool(membership_is_tbd),
+            landing_point_is_tbd=isnothing(matched.landing_record.is_tbd) ? missing : Bool(matched.landing_record.is_tbd),
+            source_longitude_deg=matched.landing_record.coordinate[1],
+            source_latitude_deg=matched.landing_record.coordinate[2],
             route_match_distance_m=matched.distance_m,
-            source_landing_attributes_json=String(JSON3.write(matched.landing)),
-        ))
-        route = [anchor_coordinate, matched.coordinate]
-        push!(edges, (;
-            edge_id="edge_$(src_vertex)_$(dst_vertex)",
-            src_vertex,
-            dst_vertex,
-            name,
-            distance_m=polyline_length_m(route),
-            distance_method="geodesic_polyline",
-            distance_note="Derived two-point branch retaining a distinct explicit landing that maps to an occupied stylized route vertex.",
-            contributing_source_edge_count=1,
-            geometry_wkt=linestring_wkt(route),
-            source_edge_ids="landing_match_$(landing_id)",
-            selected_source_edge_id="landing_match_$(landing_id)",
-            source_attributes_json=String(JSON3.write(matched.landing)),
+            membership_attributes_json=String(JSON3.write(matched.landing)),
+            source_landing_attributes_json=matched.landing_record.attributes_json,
         ))
         push!(attached_landing_ids, landing_id)
     end
     length(attached_landing_ids) == length(matches) || error("$(cable_id): not all explicit landings were published")
 
+    edges = normalized.edges
     write_network(output, network_id, nodes, edges)
     match_distances = getproperty.(matches, :distance_m)
     raw_length = get(metadata, :length, nothing)
@@ -232,14 +225,18 @@ for (metadata, network_id) in zip(included, network_ids)
         source_edge_count=length(records),
         self_loops_removed=normalized.self_loops_removed,
         parallel_edges_combined=normalized.parallel_edges_combined,
-        source_geometry_feature_count=length(features),
+        source_route_feature_count=length(features),
         source_geometry_part_count=length(parts),
+        source_landing_point_count=length(matches),
         reported_system_length=isnothing(raw_length) ? missing : string(raw_length),
         reported_system_length_km=reported_length_km(raw_length),
         owners=isnothing(get(metadata, :owners, nothing)) ? missing : string(metadata.owners),
         suppliers=isnothing(get(metadata, :suppliers, nothing)) ? missing : string(metadata.suppliers),
         ready_for_service=isnothing(get(metadata, :rfs, nothing)) ? missing : string(metadata.rfs),
+        ready_for_service_year=isnothing(get(metadata, :rfs_year, nothing)) ? missing : Int(metadata.rfs_year),
         is_planned=isnothing(get(metadata, :is_planned, nothing)) ? missing : Bool(metadata.is_planned),
+        website_url=isnothing(get(metadata, :url, nothing)) ? missing : string(metadata.url),
+        source_notes=isnothing(get(metadata, :notes, nothing)) ? missing : string(metadata.notes),
         landing_match_max_m=maximum(match_distances),
         landing_match_mean_m=sum(match_distances) / length(match_distances),
     ))
@@ -247,7 +244,7 @@ for (metadata, network_id) in zip(included, network_ids)
         source_reference="cable $(cable_id)",
         network_id,
         status="published",
-        detail="$(length(matches)) explicit landings; maximum route-vertex match $(maximum(match_distances)) m; $(length(matches) - length(primary_by_route)) occupied-vertex landing(s)",
+        detail="$(length(matches)) explicit landings; maximum route-vertex match $(maximum(match_distances)) m; $(length(matches) - length(primary_by_route)) occupied-vertex landing isolate(s)",
     ))
 end
 
@@ -260,6 +257,16 @@ for metadata in excluded
     ))
 end
 
-write_artifact_metadata(output, @__DIR__, DataFrame(summary_rows))
+summary = DataFrame(summary_rows)
+sum(summary.source_node_count) == 2_376 || error("unexpected explicit landing count")
+sum(summary.source_route_feature_count) == 525 || error("unexpected route feature count")
+sum(summary.source_geometry_part_count) == 1_441 || error("unexpected route part count")
+sum(summary.node_count) == 3_082 || error("unexpected normalized node count")
+sum(summary.edge_count) == 2_466 || error("unexpected normalized edge count")
+sum(summary.component_count) == 662 || error("unexpected normalized component count")
+sum(summary.self_loops_removed) == 0 || error("unexpected self-loop count")
+sum(summary.parallel_edges_combined) == 27 || error("unexpected parallel-edge count")
+
+write_artifact_metadata(output, @__DIR__, summary)
 CSV.write(joinpath(output, "extraction_report.csv"), DataFrame(report_rows); missingstring="")
 println("Wrote 519 cable networks and 2 exclusions to $(output)")
