@@ -25,7 +25,8 @@ julia --project=../.. ../../data_sources/validate.jl cotes_darmor_2016 output/co
 
 The raw files begin with two UTF-8 byte-order marks; the extractor removes only leading marks. It
 checks all endpoint identifiers against point assets and deterministically repairs disagreements by
-a nearest geometry match within 5 m. If no point is within that tolerance, it creates a
+a nearest geometry match within 5 m. Endpoint identifiers are treated as an unordered pair and
+oriented against route geometry. If no point is within that tolerance, the extractor creates a
 coordinate-bearing geometry endpoint. Every repair, including malformed or shifted publisher IDs,
 is recorded in `extraction_report.csv`.
 

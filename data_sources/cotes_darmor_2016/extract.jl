@@ -135,6 +135,28 @@ function resolve_endpoint(coordinate, source_id, endpoint_label, declared_ids, p
     return key
 end
 
+function orient_declared_ids(route, declared_ids)
+    length(declared_ids) == 2 || return (nothing, nothing)
+    available = [haskey(asset_to_source_indices, id) for id in declared_ids]
+    any(available) || return (nothing, nothing)
+    endpoint_distance(id, coordinate) = minimum(
+        haversine_m(coordinate[1], coordinate[2], published_nodes[index].coordinate...)
+        for index in asset_to_source_indices[id]
+    )
+    if all(available)
+        direct = endpoint_distance(declared_ids[1], first(route)) +
+            endpoint_distance(declared_ids[2], last(route))
+        reverse_cost = endpoint_distance(declared_ids[2], first(route)) +
+            endpoint_distance(declared_ids[1], last(route))
+        return direct <= reverse_cost ? Tuple(declared_ids) : reverse(Tuple(declared_ids))
+    end
+    id = only(declared_ids[available])
+    if endpoint_distance(id, first(route)) <= endpoint_distance(id, last(route))
+        return (id, nothing)
+    end
+    return (nothing, id)
+end
+
 function make_network(distance_policy, source_table, network_id, name, id_column, prefer_declared_ids)
     node_definitions = Dict{String,NamedTuple}()
     candidates = NamedTuple[]
@@ -146,8 +168,8 @@ function make_network(distance_policy, source_table, network_id, name, id_column
         length(route) >= 2 || error("$(source_id): geometry has fewer than two points")
         declared_ids = declared_endpoint_ids(published_id)
         repairs = String[]
-        preferred_src = prefer_declared_ids && length(declared_ids) == 2 ? declared_ids[1] : nothing
-        preferred_dst = prefer_declared_ids && length(declared_ids) == 2 ? declared_ids[2] : nothing
+        preferred_src, preferred_dst = prefer_declared_ids ?
+            orient_declared_ids(route, declared_ids) : (nothing, nothing)
         src_key = resolve_endpoint(route[1], source_id, "a", declared_ids, preferred_src, node_definitions, repairs)
         dst_key = resolve_endpoint(route[end], source_id, "b", declared_ids, preferred_dst, node_definitions, repairs)
         distance_m, method, note = distance_policy(row, route)
