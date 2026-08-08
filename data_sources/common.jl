@@ -155,6 +155,119 @@ function canonicalize_explicit_edges(source_edges, vertex_by_source_id; distance
     return (; edges, removed_loops, combined_parallel=nrow(source_edges) - removed_loops - nrow(edges))
 end
 
+function normalize_line_records(records;
+        coordinate_method="geometry_vertex",
+        node_note="Node derived from a source geometry endpoint or shared vertex.",
+        distance_method="geodesic_polyline",
+        distance_note="Calculated along the published WGS84 polyline.",
+        distance=(record, segment) -> polyline_length_m(segment))
+    cleaned = [merge(record, (; coordinates=_deduplicate_consecutive(record.coordinates))) for record in records]
+    all(record -> length(record.coordinates) >= 2, cleaned) ||
+        throw(ArgumentError("every line record needs at least two distinct consecutive coordinates"))
+
+    occurrences = Dict{Tuple{Float64,Float64},Int}()
+    sources_by_coordinate = Dict{Tuple{Float64,Float64},Set{String}}()
+    for record in cleaned, coordinate in record.coordinates
+        point = (Float64(coordinate[1]), Float64(coordinate[2]))
+        (-180 <= point[1] <= 180 && -90 <= point[2] <= 90 && all(isfinite, point)) ||
+            throw(ArgumentError("source $(record.source_id) has an invalid WGS84 coordinate $(point)"))
+        occurrences[point] = get(occurrences, point, 0) + 1
+        push!(get!(sources_by_coordinate, point, Set{String}()), string(record.source_id))
+    end
+
+    segments = NamedTuple[]
+    for record in cleaned
+        route = [(Float64(point[1]), Float64(point[2])) for point in record.coordinates]
+        split_indices = unique(sort!([1;
+            [index for index in 2:(length(route) - 1) if occurrences[route[index]] > 1];
+            length(route)]))
+        for (first_index, last_index) in zip(split_indices, @view(split_indices[2:end]))
+            segment = route[first_index:last_index]
+            value = Float64(distance(record, segment))
+            isfinite(value) && value >= 0 || throw(ArgumentError(
+                "source $(record.source_id) produced invalid distance $(value)",
+            ))
+            push!(segments, (;
+                source_id=string(record.source_id),
+                name=string(record.name),
+                source_attributes_json=string(record.source_attributes_json),
+                coordinates=segment,
+                distance_m=value,
+            ))
+        end
+    end
+
+    node_coordinates = sort!(unique(vcat(
+        [segment.coordinates[1] for segment in segments],
+        [segment.coordinates[end] for segment in segments],
+    )))
+    vertex_by_coordinate = Dict(coordinate => vertex for (vertex, coordinate) in enumerate(node_coordinates))
+    nodes = DataFrame(
+        vertex=collect(eachindex(node_coordinates)),
+        node_id=["node_$(lpad(vertex, 6, '0'))" for vertex in eachindex(node_coordinates)],
+        name=fill("", length(node_coordinates)),
+        longitude_deg=first.(node_coordinates),
+        latitude_deg=last.(node_coordinates),
+        coordinate_method=fill(coordinate_method, length(node_coordinates)),
+        note=fill(node_note, length(node_coordinates)),
+        source_feature_ids=[join(sort!(collect(get(sources_by_coordinate, coordinate, Set{String}()))), ";")
+            for coordinate in node_coordinates],
+    )
+
+    self_loops = 0
+    grouped = Dict{Tuple{Int,Int},Vector{NamedTuple}}()
+    for segment in segments
+        src = vertex_by_coordinate[segment.coordinates[1]]
+        dst = vertex_by_coordinate[segment.coordinates[end]]
+        if src == dst
+            self_loops += 1
+            continue
+        end
+        pair = minmax(src, dst)
+        oriented_coordinates = src == pair[1] ? segment.coordinates : reverse(segment.coordinates)
+        candidate = merge(segment, (; pair, coordinates=oriented_coordinates))
+        push!(get!(grouped, pair, NamedTuple[]), candidate)
+    end
+
+    edge_rows = NamedTuple[]
+    for (pair, alternatives) in sort!(collect(grouped); by=first)
+        sort!(alternatives; by=candidate -> (candidate.distance_m, candidate.source_id))
+        chosen = first(alternatives)
+        push!(edge_rows, (;
+            edge_id="edge_$(pair[1])_$(pair[2])",
+            src_vertex=pair[1],
+            dst_vertex=pair[2],
+            name=chosen.name,
+            distance_m=chosen.distance_m,
+            distance_method,
+            distance_note,
+            contributing_source_edge_count=length(alternatives),
+            geometry_wkt=linestring_wkt(chosen.coordinates),
+            source_edge_ids=join(sort!(getproperty.(alternatives, :source_id)), ";"),
+            selected_source_edge_id=chosen.source_id,
+            source_attributes_json="[" * join(sort!(getproperty.(alternatives, :source_attributes_json)), ",") * "]",
+        ))
+    end
+    edges = DataFrame(edge_rows)
+    return (;
+        nodes,
+        edges,
+        self_loops_removed=self_loops,
+        parallel_edges_combined=length(segments) - self_loops - nrow(edges),
+        segment_count=length(segments),
+    )
+end
+
+function _deduplicate_consecutive(coordinates)
+    result = Tuple{Float64,Float64}[]
+    for coordinate in coordinates
+        point = (Float64(coordinate[1]), Float64(coordinate[2]))
+        isempty(result) || point != result[end] || continue
+        push!(result, point)
+    end
+    return result
+end
+
 function write_network(output_root, network_id, nodes, edges)
     sort!(nodes, :vertex)
     sort!(edges, [:src_vertex, :dst_vertex])
@@ -203,6 +316,7 @@ export NETWORK_COLUMNS,
     linestring_wkt,
     component_count,
     canonicalize_explicit_edges,
+    normalize_line_records,
     write_network,
     write_artifact_metadata,
     parse_cli
