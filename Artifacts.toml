@@ -6,6 +6,14 @@ lazy = true
     sha256 = "1b2ed4e36a3011f9c0fc3cc203e206b21d4e3c0ad79170cefebcf9367c7ef500"
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6276f9911e418b762aea605cadab27a51678ebba.tar.gz"
 
+[grand_lyon_fibre]
+git-tree-sha1 = "4723f981da2e34835399f9e67979b05aaace8bb0"
+lazy = true
+
+    [[grand_lyon_fibre.download]]
+    sha256 = "a2724dc14c060b961a57f81b5c80c50eaf466ac4698cb760add5eea2e11ac6e7"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/4723f981da2e34835399f9e67979b05aaace8bb0.tar.gz"
+
 [internet_topology_zoo]
 git-tree-sha1 = "6a1a465b666d3410aaa15783579f0ed491777763"
 lazy = true
