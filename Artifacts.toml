@@ -7,12 +7,12 @@ lazy = true
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6276f9911e418b762aea605cadab27a51678ebba.tar.gz"
 
 [cotes_darmor_2016]
-git-tree-sha1 = "d7eaf8ffe7799770de45fc5e34e297eb9030b68c"
+git-tree-sha1 = "44a9219a6465cd70b9f6caae88521808ea81ec50"
 lazy = true
 
     [[cotes_darmor_2016.download]]
-    sha256 = "5e821eb5562d10a7548248f129dee09a69885cbe14fb4825e9d263ffaf11415f"
-    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/d7eaf8ffe7799770de45fc5e34e297eb9030b68c.tar.gz"
+    sha256 = "524afd7679c3b351f61f44b68066215fa07cc660b064d835b934f6152af20a08"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/44a9219a6465cd70b9f6caae88521808ea81ec50.tar.gz"
 
 [gold_coast_fibre]
 git-tree-sha1 = "a9631556cc33d2967b3a05374bd0e6a1d7910f46"
@@ -23,12 +23,12 @@ lazy = true
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/a9631556cc33d2967b3a05374bd0e6a1d7910f46.tar.gz"
 
 [grand_lyon_fibre]
-git-tree-sha1 = "df31ca573a531de2f3ff3b611324bc72698dd002"
+git-tree-sha1 = "f4a6e975e6be5da5c8feb11d012fa7169726bb3f"
 lazy = true
 
     [[grand_lyon_fibre.download]]
-    sha256 = "8e37aab56974dec66740403b38d67b6cdaf9424c4c64cd9ab65e0517e8d17105"
-    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/df31ca573a531de2f3ff3b611324bc72698dd002.tar.gz"
+    sha256 = "7dc0630bfdcaabb87f8345ac70a501b0b8550a75ae21e61e4428566a5b0cb13b"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/f4a6e975e6be5da5c8feb11d012fa7169726bb3f.tar.gz"
 
 [internet_topology_zoo]
 git-tree-sha1 = "6a1a465b666d3410aaa15783579f0ed491777763"
@@ -47,9 +47,9 @@ lazy = true
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/c8afff85bd6ea652cca160a7794182ce0e3bd3ad.tar.gz"
 
 [vermont_state_fibre]
-git-tree-sha1 = "00c15f0297e31de8c266ca3e0d31a75324836811"
+git-tree-sha1 = "6c811fe6dc01202af77afaa222a3d459f5f267e9"
 lazy = true
 
     [[vermont_state_fibre.download]]
-    sha256 = "00929b6f8cb184829ade25103eef3bdc28c564b6312ad70073ae6f8245696244"
-    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/00c15f0297e31de8c266ca3e0d31a75324836811.tar.gz"
+    sha256 = "8b360b695ad368dfbc4da1d81e790f92957a084e9c60e3fa9aa1e1a85f1e7aa3"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6c811fe6dc01202af77afaa222a3d459f5f267e9.tar.gz"
