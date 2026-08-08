@@ -14,7 +14,7 @@ const CHECKSUMS = Dict(
 const LICENSE = "etalab-2.0"
 const LICENSE_URL = "https://www.etalab.gouv.fr/licence-ouverte-open-licence/"
 const CITATION = "Département des Côtes-d'Armor, fibre optique de la montée en débit, 2016 node, artery, and optical-cable tables."
-const MATCH_TOLERANCE_M = 0.1
+const MATCH_TOLERANCE_M = 5.0
 
 function read_source_csv(path)
     bytes = read(path)

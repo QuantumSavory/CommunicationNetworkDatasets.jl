@@ -160,18 +160,17 @@ function normalize_line_records(records;
         node_note="Node derived from a source geometry endpoint or shared vertex.",
         distance_method="geodesic_polyline",
         distance_note="Calculated along the published WGS84 polyline.",
+        forced_node_coordinates=Set{Tuple{Float64,Float64}}(),
         distance=(record, segment) -> polyline_length_m(segment))
     cleaned = [merge(record, (; coordinates=_deduplicate_consecutive(record.coordinates))) for record in records]
     degenerate_record_count = count(record -> length(record.coordinates) < 2, cleaned)
     usable = filter(record -> length(record.coordinates) >= 2, cleaned)
 
-    occurrences = Dict{Tuple{Float64,Float64},Int}()
     sources_by_coordinate = Dict{Tuple{Float64,Float64},Set{String}}()
     for record in usable, coordinate in record.coordinates
         point = (Float64(coordinate[1]), Float64(coordinate[2]))
         (-180 <= point[1] <= 180 && -90 <= point[2] <= 90 && all(isfinite, point)) ||
             throw(ArgumentError("source $(record.source_id) has an invalid WGS84 coordinate $(point)"))
-        occurrences[point] = get(occurrences, point, 0) + 1
         push!(get!(sources_by_coordinate, point, Set{String}()), string(record.source_id))
     end
 
@@ -179,7 +178,9 @@ function normalize_line_records(records;
     for record in usable
         route = [(Float64(point[1]), Float64(point[2])) for point in record.coordinates]
         split_indices = unique(sort!([1;
-            [index for index in 2:(length(route) - 1) if occurrences[route[index]] > 1];
+            [index for index in 2:(length(route) - 1) if
+                length(sources_by_coordinate[route[index]]) > 1 ||
+                route[index] in forced_node_coordinates];
             length(route)]))
         for (first_index, last_index) in zip(split_indices, @view(split_indices[2:end]))
             segment = route[first_index:last_index]
