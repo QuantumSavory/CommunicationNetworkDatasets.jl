@@ -167,11 +167,20 @@ function normalize_line_records(records;
     usable = filter(record -> length(record.coordinates) >= 2, cleaned)
 
     sources_by_coordinate = Dict{Tuple{Float64,Float64},Set{String}}()
-    for record in usable, coordinate in record.coordinates
-        point = (Float64(coordinate[1]), Float64(coordinate[2]))
-        (-180 <= point[1] <= 180 && -90 <= point[2] <= 90 && all(isfinite, point)) ||
-            throw(ArgumentError("source $(record.source_id) has an invalid WGS84 coordinate $(point)"))
-        push!(get!(sources_by_coordinate, point, Set{String}()), string(record.source_id))
+    neighbors_by_coordinate = Dict{Tuple{Float64,Float64},Set{Tuple{Float64,Float64}}}()
+    endpoint_coordinates = Set{Tuple{Float64,Float64}}()
+    for record in usable
+        route = record.coordinates
+        push!(endpoint_coordinates, first(route), last(route))
+        for (index, coordinate) in enumerate(route)
+            point = (Float64(coordinate[1]), Float64(coordinate[2]))
+            (-180 <= point[1] <= 180 && -90 <= point[2] <= 90 && all(isfinite, point)) ||
+                throw(ArgumentError("source $(record.source_id) has an invalid WGS84 coordinate $(point)"))
+            push!(get!(sources_by_coordinate, point, Set{String}()), string(record.source_id))
+            neighbors = get!(neighbors_by_coordinate, point, Set{Tuple{Float64,Float64}}())
+            index > 1 && push!(neighbors, route[index - 1])
+            index < length(route) && push!(neighbors, route[index + 1])
+        end
     end
 
     segments = NamedTuple[]
@@ -179,7 +188,8 @@ function normalize_line_records(records;
         route = [(Float64(point[1]), Float64(point[2])) for point in record.coordinates]
         split_indices = unique(sort!([1;
             [index for index in 2:(length(route) - 1) if
-                length(sources_by_coordinate[route[index]]) > 1 ||
+                route[index] in endpoint_coordinates ||
+                length(neighbors_by_coordinate[route[index]]) != 2 ||
                 route[index] in forced_node_coordinates];
             length(route)]))
         for (first_index, last_index) in zip(split_indices, @view(split_indices[2:end]))
