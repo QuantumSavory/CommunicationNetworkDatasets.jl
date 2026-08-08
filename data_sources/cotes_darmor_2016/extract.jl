@@ -79,14 +79,31 @@ published_nodes = [begin
     )
 end for (index, row) in enumerate(eachrow(source_nodes))]
 
-function resolve_endpoint(coordinate, source_id, endpoint_label, declared_ids, node_definitions, repair_notes)
+asset_to_source_indices = Dict{String,Vector{Int}}()
+for (source_index, node) in enumerate(published_nodes), asset_id in node.source_asset_ids
+    push!(get!(asset_to_source_indices, asset_id, Int[]), source_index)
+end
+
+function resolve_endpoint(coordinate, source_id, endpoint_label, declared_ids, preferred_id,
+        node_definitions, repair_notes)
     distances = [haversine_m(coordinate[1], coordinate[2], node.coordinate[1], node.coordinate[2])
         for node in published_nodes]
-    distance_m, source_index = findmin(distances)
+    source_index = 0
+    if !isnothing(preferred_id) && haskey(asset_to_source_indices, preferred_id)
+        candidates = asset_to_source_indices[preferred_id]
+        local_index = argmin(distances[candidates])
+        source_index = candidates[local_index]
+        length(candidates) > 1 && push!(repair_notes,
+            "endpoint $(endpoint_label): duplicate publisher asset $(preferred_id) resolved by geometry")
+    else
+        source_index = argmin(distances)
+    end
+    distance_m = distances[source_index]
     nearest = published_nodes[source_index]
-    if distance_m <= MATCH_TOLERANCE_M
+    if distance_m <= MATCH_TOLERANCE_M ||
+            (!isnothing(preferred_id) && haskey(asset_to_source_indices, preferred_id))
         declared_matches = any(id -> id in nearest.source_asset_ids, declared_ids)
-        declared_matches || push!(repair_notes,
+        (!declared_matches || distance_m > MATCH_TOLERANCE_M) && push!(repair_notes,
             "endpoint $(endpoint_label): geometry matched $(nearest.source_node_id) at $(distance_m) m; declared IDs=$(join(declared_ids, '|'))")
         node_definitions[nearest.key] = (;
             key=nearest.key,
@@ -118,7 +135,7 @@ function resolve_endpoint(coordinate, source_id, endpoint_label, declared_ids, n
     return key
 end
 
-function make_network(distance_policy, source_table, network_id, name, id_column)
+function make_network(distance_policy, source_table, network_id, name, id_column, prefer_declared_ids)
     node_definitions = Dict{String,NamedTuple}()
     candidates = NamedTuple[]
     report_rows = NamedTuple[]
@@ -129,8 +146,10 @@ function make_network(distance_policy, source_table, network_id, name, id_column
         length(route) >= 2 || error("$(source_id): geometry has fewer than two points")
         declared_ids = declared_endpoint_ids(published_id)
         repairs = String[]
-        src_key = resolve_endpoint(route[1], source_id, "a", declared_ids, node_definitions, repairs)
-        dst_key = resolve_endpoint(route[end], source_id, "b", declared_ids, node_definitions, repairs)
+        preferred_src = prefer_declared_ids && length(declared_ids) == 2 ? declared_ids[1] : nothing
+        preferred_dst = prefer_declared_ids && length(declared_ids) == 2 ? declared_ids[2] : nothing
+        src_key = resolve_endpoint(route[1], source_id, "a", declared_ids, preferred_src, node_definitions, repairs)
+        dst_key = resolve_endpoint(route[end], source_id, "b", declared_ids, preferred_dst, node_definitions, repairs)
         distance_m, method, note = distance_policy(row, route)
         push!(candidates, (;
             src_key,
@@ -212,11 +231,11 @@ function make_network(distance_policy, source_table, network_id, name, id_column
     )
 end
 
-arteries = make_network(source_arteries, "arteries", "Departmental fibre arteries", :ID_ARTERE) do row, route
+arteries = make_network(source_arteries, "arteries", "Departmental fibre arteries", :ID_ARTERE, false) do row, route
     value = Float64(row.AR_LONG)
     return (value, "reported", "Publisher-reported artery route length; source values and geometry indicate an assumed unit of metres.")
 end
-cables = make_network(source_cables, "optical_cables", "Departmental optical cables", :ID_CABLE) do row, route
+cables = make_network(source_cables, "optical_cables", "Departmental optical cables", :ID_CABLE, true) do row, route
     if !ismissing(row.CA_LG_MES) && isfinite(row.CA_LG_MES) && row.CA_LG_MES >= 0
         return (Float64(row.CA_LG_MES), "measured", "Publisher cable measured length; source values and geometry indicate an assumed unit of metres.")
     elseif !ismissing(row.CA_LG_CAL) && isfinite(row.CA_LG_CAL) && row.CA_LG_CAL >= 0
