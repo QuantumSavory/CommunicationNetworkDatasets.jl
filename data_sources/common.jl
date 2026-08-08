@@ -253,7 +253,7 @@ function normalize_line_records(records;
         nodes,
         edges,
         self_loops_removed=self_loops,
-        parallel_edges_combined=length(segments) - self_loops - nrow(edges),
+        parallel_edges_combined=length(segments) + degenerate_record_count - self_loops - nrow(edges),
         segment_count=length(segments),
     )
 end
