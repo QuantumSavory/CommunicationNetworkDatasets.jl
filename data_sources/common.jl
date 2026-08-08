@@ -162,12 +162,12 @@ function normalize_line_records(records;
         distance_note="Calculated along the published WGS84 polyline.",
         distance=(record, segment) -> polyline_length_m(segment))
     cleaned = [merge(record, (; coordinates=_deduplicate_consecutive(record.coordinates))) for record in records]
-    all(record -> length(record.coordinates) >= 2, cleaned) ||
-        throw(ArgumentError("every line record needs at least two distinct consecutive coordinates"))
+    degenerate_record_count = count(record -> length(record.coordinates) < 2, cleaned)
+    usable = filter(record -> length(record.coordinates) >= 2, cleaned)
 
     occurrences = Dict{Tuple{Float64,Float64},Int}()
     sources_by_coordinate = Dict{Tuple{Float64,Float64},Set{String}}()
-    for record in cleaned, coordinate in record.coordinates
+    for record in usable, coordinate in record.coordinates
         point = (Float64(coordinate[1]), Float64(coordinate[2]))
         (-180 <= point[1] <= 180 && -90 <= point[2] <= 90 && all(isfinite, point)) ||
             throw(ArgumentError("source $(record.source_id) has an invalid WGS84 coordinate $(point)"))
@@ -176,7 +176,7 @@ function normalize_line_records(records;
     end
 
     segments = NamedTuple[]
-    for record in cleaned
+    for record in usable
         route = [(Float64(point[1]), Float64(point[2])) for point in record.coordinates]
         split_indices = unique(sort!([1;
             [index for index in 2:(length(route) - 1) if occurrences[route[index]] > 1];
@@ -214,7 +214,7 @@ function normalize_line_records(records;
             for coordinate in node_coordinates],
     )
 
-    self_loops = 0
+    self_loops = degenerate_record_count
     grouped = Dict{Tuple{Int,Int},Vector{NamedTuple}}()
     for segment in segments
         src = vertex_by_coordinate[segment.coordinates[1]]
