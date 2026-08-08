@@ -65,7 +65,7 @@ try
                 "$(file.name): unexpected edge columns $(propertynames(source_edges))",
             )
 
-            source_node_ids = string.(source_nodes[!, node_id_column])
+            source_node_ids = stable_source_id.(source_nodes[!, node_id_column])
             length(unique(source_node_ids)) == length(source_node_ids) || error("$(file.name): duplicate Node_ID")
             permutation = sortperm(source_node_ids; by=id -> tryparse(Int, id) === nothing ? (1, id) : (0, lpad(id, 20, '0')))
             source_nodes = source_nodes[permutation, :]
@@ -84,9 +84,9 @@ try
             )
 
             edge_input = DataFrame(
-                src=string.(source_edges.Source),
-                dst=string.(source_edges.Destination),
-                source_edge_id=string.(source_edges.Edge_ID),
+                src=stable_source_id.(source_edges.Source),
+                dst=stable_source_id.(source_edges.Destination),
+                source_edge_id=stable_source_id.(source_edges.Edge_ID),
                 computed_length_km=Float64.(source_edges[!, Symbol("Computed Length (km)")]),
             )
             normalized = canonicalize_explicit_edges(

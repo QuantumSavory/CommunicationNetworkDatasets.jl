@@ -68,6 +68,15 @@ function unique_slugs(values)
     end for value in values]
 end
 
+function stable_source_id(value)
+    if value isa Integer
+        return string(value)
+    elseif value isa AbstractFloat && isinteger(value)
+        return string(Int(value))
+    end
+    return strip(string(value))
+end
+
 function haversine_m(longitude_a, latitude_a, longitude_b, latitude_b)
     radius_m = 6_371_008.8
     phi_a, phi_b = deg2rad(latitude_a), deg2rad(latitude_b)
@@ -188,6 +197,7 @@ export NETWORK_COLUMNS,
     EDGE_COLUMNS,
     slug,
     unique_slugs,
+    stable_source_id,
     haversine_m,
     polyline_length_m,
     linestring_wkt,
