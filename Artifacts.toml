@@ -1,1 +1,7 @@
-# Lazy dataset and documentation-basemap bindings are added only after immutable data-v1 uploads.
+[topology_bench]
+git-tree-sha1 = "c8afff85bd6ea652cca160a7794182ce0e3bd3ad"
+lazy = true
+
+    [[topology_bench.download]]
+    sha256 = "884fa6b972a81bffdf01b463f5183a80564ceb39dda92cad65429d2849781594"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/c8afff85bd6ea652cca160a7794182ce0e3bd3ad.tar.gz"
