@@ -14,10 +14,11 @@ const SOURCE_URL = "https://ndownloader.figshare.com/files/58057750"
 const LICENSE = "CC-BY-4.0"
 const LICENSE_URL = "https://creativecommons.org/licenses/by/4.0/"
 const CITATION = "Knight et al., The Internet Topology Zoo, IEEE Journal on Selected Areas in Communications 29(9), 2011; licensed Figshare deposit 30153949.v1."
+const NO_NAMESPACES = Pair{String,String}[]
 
 function element_attributes(element, key_names)
     attributes = Dict{String,String}()
-    for data in findall("./*[local-name()='data']", element)
+    for data in findall("./*[local-name()='data']", element, NO_NAMESPACES)
         key = get(key_names, data["key"], data["key"])
         attributes[key] = strip(nodecontent(data))
     end
@@ -41,12 +42,12 @@ function extract_graphml(path, output, network_id)
     graphml = root(document)
     key_names = Dict(
         key["id"] => (haskey(key, "attr.name") ? key["attr.name"] : key["id"])
-        for key in findall("./*[local-name()='key']", graphml)
+        for key in findall("./*[local-name()='key']", graphml, NO_NAMESPACES)
     )
-    graph = only(findall("./*[local-name()='graph']", graphml))
+    graph = only(findall("./*[local-name()='graph']", graphml, NO_NAMESPACES))
     graph_attributes = element_attributes(graph, key_names)
-    node_elements = findall("./*[local-name()='node']", graph)
-    edge_elements = findall("./*[local-name()='edge']", graph)
+    node_elements = findall("./*[local-name()='node']", graph, NO_NAMESPACES)
+    edge_elements = findall("./*[local-name()='edge']", graph, NO_NAMESPACES)
 
     parsed_nodes = [begin
         attributes = element_attributes(node, key_names)
