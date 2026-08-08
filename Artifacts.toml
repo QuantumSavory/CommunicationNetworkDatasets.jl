@@ -47,12 +47,12 @@ lazy = true
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6a1a465b666d3410aaa15783579f0ed491777763.tar.gz"
 
 [open_undersea_cable_map]
-git-tree-sha1 = "6a900d7be989db25a8388c9c92234eb473634e1d"
+git-tree-sha1 = "90aa9e53facefd051a19529e8e2ac853950bf228"
 lazy = true
 
     [[open_undersea_cable_map.download]]
-    sha256 = "8995d6485c6696503f292e2811c2a2531837bf22fb5c06a8e8a937f69b0c9717"
-    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6a900d7be989db25a8388c9c92234eb473634e1d.tar.gz"
+    sha256 = "1ceb655b5988e322aa19e7319c3d670d94404b75346d216214487a20742f3e0c"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/90aa9e53facefd051a19529e8e2ac853950bf228.tar.gz"
 
 [topology_bench]
 git-tree-sha1 = "c8afff85bd6ea652cca160a7794182ce0e3bd3ad"
