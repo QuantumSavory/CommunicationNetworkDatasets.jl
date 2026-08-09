@@ -10,8 +10,10 @@ dataset_pages = [
 ]
 generated_paths = [joinpath(@__DIR__, "src", path.second) for path in dataset_pages]
 largest_generated_page = maximum(filesize, generated_paths)
+total_generated_size = sum(filesize, generated_paths)
 size_threshold = max(200 * 2^10, 8 * largest_generated_page)
 size_threshold_warn = max(100 * 2^10, size_threshold ÷ 2)
+search_size_threshold_warn = max(500 * 2^10, 2 * total_generated_size)
 
 makedocs(
     modules=[CommunicationNetworkDatasets],
@@ -23,6 +25,7 @@ makedocs(
         inventory_version=string(pkgversion(CommunicationNetworkDatasets)),
         size_threshold,
         size_threshold_warn,
+        search_size_threshold_warn,
     ),
     pages=[
         "Home" => "index.md",
