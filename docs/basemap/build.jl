@@ -1,8 +1,6 @@
 using CairoMakie
-using JSON3: JSON3
-using SHA: sha256
 
-const SOURCE_SHA256 = "9e0729ee253ca7d7a5c4ae9395fb1902264c5377c52e224d13dd85010e2835d9"
+include("NaturalEarthBasemap.jl")
 
 function parse_cli(arguments)
     iseven(length(arguments)) || error("expected --option value pairs")
@@ -11,33 +9,25 @@ function parse_cli(arguments)
     return options
 end
 
-function exterior_rings(geometry)
-    geometry.type == "Polygon" && return [first(geometry.coordinates)]
-    geometry.type == "MultiPolygon" && return [first(polygon) for polygon in geometry.coordinates]
-    error("unsupported Natural Earth geometry $(geometry.type)")
-end
-
 options = parse_cli(ARGS)
 source = abspath(options["source"])
 output = abspath(options["output"])
-bytes2hex(open(sha256, source)) == SOURCE_SHA256 || error("Natural Earth source checksum does not match")
 ispath(output) && error("output already exists: $(output)")
 
-collection = JSON3.read(read(source, String))
-collection.type == "FeatureCollection" || error("expected a GeoJSON FeatureCollection")
+polygons = NaturalEarthBasemap.load_polygons(source)
 
-figure = Figure(; size=(256, 256), figure_padding=0, backgroundcolor=RGBf(0.82, 0.90, 0.96))
+figure = Figure(;
+    size=(256, 256),
+    figure_padding=0,
+    backgroundcolor=NaturalEarthBasemap.OCEAN_COLOR,
+)
 axis = Axis(
     figure[1, 1];
-    aspect=DataAspect(),
-    backgroundcolor=RGBf(0.82, 0.90, 0.96),
+    backgroundcolor=NaturalEarthBasemap.OCEAN_COLOR,
     xautolimitmargin=(0, 0),
     yautolimitmargin=(0, 0),
 )
-for feature in collection.features, ring in exterior_rings(feature.geometry)
-    points = Point2f[(Float32(point[1]), Float32(point[2])) for point in ring]
-    poly!(axis, points; color=RGBf(0.86, 0.84, 0.73), strokecolor=RGBf(0.55, 0.58, 0.52), strokewidth=0.25)
-end
+NaturalEarthBasemap.draw!(axis, polygons; depth=0)
 limits!(axis, -180, 180, -85.05113, 85.05113)
 hidedecorations!(axis)
 hidespines!(axis)
