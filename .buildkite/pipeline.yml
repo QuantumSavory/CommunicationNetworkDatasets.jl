@@ -37,7 +37,7 @@ steps:
           version: "1.12"
       - QuantumSavory/julia-xvfb#v1: ~
     secrets:
-      - DOCUMENTER_KEY
+      DOCUMENTER_KEY: DOCUMENTER_KEY_CommunicationNetworkDatasets
     command: |
       julia --project=docs -e 'using Pkg; Pkg.instantiate()'
       julia --project=docs docs/make.jl
