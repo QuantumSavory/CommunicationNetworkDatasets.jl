@@ -35,6 +35,27 @@ makedocs(
     ],
 )
 
+built_dataset_paths = [
+    joinpath(@__DIR__, "build", first(splitext(page.second)), "index.html")
+    for page in dataset_pages
+]
+built_dataset_pages = read.(built_dataset_paths, String)
+rendered_figure_count = sum(
+    length(findall("<figure>", page)) for page in built_dataset_pages
+)
+rendered_figure_count == generation.image_count || error(
+    "rendered $(rendered_figure_count) network figures; expected $(generation.image_count)",
+)
+rendered_image_count = sum(
+    length(findall("<img loading=\"lazy\" decoding=\"async\"", page))
+    for page in built_dataset_pages
+)
+rendered_image_count == generation.image_count || error(
+    "rendered $(rendered_image_count) network images; expected $(generation.image_count)",
+)
+any(occursin("&lt;figure&gt;"), built_dataset_pages) &&
+    error("generated dataset pages contain escaped figure HTML")
+
 deploydocs(;
     repo="github.com/QuantumSavory/CommunicationNetworkDatasets.jl.git",
     devbranch="main",
