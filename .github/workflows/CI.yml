@@ -21,7 +21,7 @@ jobs:
             os: ubuntu-latest
             arch: x64
           - label: macOS ARM64
-            os: macos-14
+            os: macos-15
             arch: aarch64
           - label: Windows x64
             os: windows-latest
