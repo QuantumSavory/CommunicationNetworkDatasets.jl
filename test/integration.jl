@@ -27,17 +27,36 @@
         "measured", "reported", "source_calculated", "projected_geometry", "geodesic_polyline",
         "geodesic_endpoints", "scaled_geodesic_endpoints", "modeled",
     ])
+    const EXPECTED_DATASETS = Dict(
+        "australia_submarine_cables_2021" => (network_count=16, license="CC-BY-4.0", notice="CC-BY-4.0"),
+        "cotes_darmor_2016" => (network_count=2, license="etalab-2.0", notice="etalab-2.0"),
+        "gold_coast_fibre" => (network_count=1, license="CC-BY-3.0-AU", notice="CC-BY-3.0-AU"),
+        "grand_lyon_fibre" => (network_count=1, license="etalab-2.0", notice="etalab-2.0"),
+        "gregs_submarine_cable_map" => (network_count=279, license="GNU GPL, version unspecified", notice="GNU GPL, version unspecified"),
+        "internet_topology_zoo" => (network_count=85, license="CC-BY-4.0", notice="CC-BY-4.0"),
+        "open_undersea_cable_map" => (network_count=519, license="CC-BY-NC-SA-3.0", notice="Attribution-NonCommercial-ShareAlike"),
+        "topology_bench" => (network_count=105, license="CC-BY-4.0", notice="CC-BY-4.0"),
+        "vermont_state_fibre" => (network_count=2, license="Vermont-Open-Geodata-Policy", notice="non-value-added"),
+    )
 
     catalog = datasets()
     @test names(catalog) == DATASET_COLUMNS
+    @test Set(String.(catalog.dataset_id)) == Set(keys(EXPECTED_DATASETS))
+    @test sum(catalog.network_count) == 1_010
     @test all(catalog.schema_version .== 1)
     @test all(id -> occursin(r"^[a-z][a-z0-9_]*$", id), catalog.dataset_id)
     @test allunique(catalog.dataset_id)
     @test allunique(catalog.artifact_name)
     @test all(count -> count > 0, catalog.network_count)
+    @test all(value -> occursin(r"^\d{4}-\d{2}-\d{2}$", string(value)), catalog.retrieval_date)
+    @test all(value -> occursin(r"^[0-9a-f]{40}$", value), catalog.extraction_script_commit)
+    @test all(value -> !isempty(value), catalog.upstream_checksum)
 
     total_networks = Ref(0)
     for dataset in eachrow(catalog)
+        expected_dataset = EXPECTED_DATASETS[String(dataset.dataset_id)]
+        @test dataset.network_count == expected_dataset.network_count
+        @test dataset.license_identifier == expected_dataset.license
         metadata = networks(dataset.dataset_id)
         @test names(metadata)[1:length(NETWORK_COLUMNS)] == NETWORK_COLUMNS
         @test nrow(metadata) == dataset.network_count
@@ -48,7 +67,9 @@
 
         artifact_root = CommunicationNetworkDatasets._artifact_root(dataset.dataset_id)
         @test filesize(joinpath(artifact_root, "README.md")) > 0
-        @test filesize(joinpath(artifact_root, "LICENSE.md")) > 0
+        license_path = joinpath(artifact_root, "LICENSE.md")
+        @test filesize(license_path) > 0
+        @test occursin(expected_dataset.notice, read(license_path, String))
 
         for network in eachrow(metadata)
             loaded = load_network(dataset.dataset_id, network.network_id)
@@ -98,14 +119,22 @@ end
     @test datasets().name[1] == original_name
 
     dataset_id = first(datasets().dataset_id)
-    network_id = first(networks(dataset_id).network_id)
+    first_network_catalog = networks(dataset_id)
+    original_network_name = first_network_catalog.name[1]
+    first_network_catalog.name[1] = "caller mutation"
+    @test networks(dataset_id).name[1] == original_network_name
+
+    network_id = first(first_network_catalog.network_id)
     first_load = load_network(dataset_id, network_id)
     original_node_name = first_load.nodes.name[1]
+    original_edge_name = first_load.edges.name[1]
     first_load.nodes.name[1] = "caller mutation"
+    first_load.edges.name[1] = "caller mutation"
     empty!(first_load.distances)
     rem_edge!(first_load.graph, first(edges(first_load.graph)))
     second_load = load_network(dataset_id, network_id)
     @test second_load.nodes.name[1] == original_node_name
+    @test second_load.edges.name[1] == original_edge_name
     @test !isempty(second_load.distances)
     @test ne(second_load.graph) > ne(first_load.graph)
 
