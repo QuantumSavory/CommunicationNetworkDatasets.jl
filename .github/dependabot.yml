@@ -6,23 +6,6 @@ updates:
     schedule:
       interval: weekly
   - package-ecosystem: julia
-    directories:
-      - /
-      - /docs
-      - /test
-      - /test/projects/jet
-      - /test/projects/tyler
-      - /data_sources/afterfibre
-      - /data_sources/australia_submarine_cables_2021
-      - /data_sources/cotes_darmor_2016
-      - /data_sources/gold_coast_fibre
-      - /data_sources/grand_lyon_fibre
-      - /data_sources/gregs_submarine_cable_map
-      - /data_sources/internet_topology_zoo
-      - /data_sources/open_undersea_cable_map
-      - /data_sources/openstreetmap_telecom
-      - /data_sources/pdok_water_authority_telecom
-      - /data_sources/topology_bench
-      - /data_sources/vermont_state_fibre
+    directory: "/"
     schedule:
       interval: weekly
