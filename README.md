@@ -10,8 +10,8 @@ distance in metres.
 > noncommercial use, or other conditions. Inspect `datasets()` and each artifact's `README.md` and
 > `LICENSE.md` before use or redistribution.
 
-The package supports Julia 1.12 only. It is not registered in General and has no semantic package
-release tag yet.
+The package requires Julia 1.12 or later within Julia 1.x. It is not registered in General and has
+no semantic package release tag yet.
 
 ```julia
 using CommunicationNetworkDatasets
@@ -61,10 +61,9 @@ publication blockers and excluded candidates.
 Use Julia 1.12:
 
 ```sh
-julia --project=test -e 'using Pkg; Pkg.instantiate()'
-julia --project=test test/runtests.jl
-julia --project=test/projects/jet test/projects/jet/runtests.jl
-xvfb-run -a julia --project=test/projects/tyler test/projects/tyler/runtests.jl
+julia --project=. -e 'using Pkg; Pkg.test()'
+julia --project=. -e 'using Pkg; Pkg.test(; test_args=["jet"])'
+xvfb-run -a julia --project=. -e 'using Pkg; Pkg.test(; test_args=["tyler"])'
 xvfb-run -a julia --project=docs docs/make.jl
 ```
 
