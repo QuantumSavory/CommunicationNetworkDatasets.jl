@@ -223,6 +223,7 @@ function _validate_edges(table, path, dataset_id, network_id, node_count)
                 path,
                 "row $(row_index) must have contributing_source_edge_count >= 1",
             )
+        _validate_geometry_wkt(row.geometry_wkt, row_index, path, dataset_id, network_id)
         push!(edge_pairs, (Int(row.src_vertex), Int(row.dst_vertex)))
     end
     allunique(edge_pairs) || _invalid(
@@ -237,6 +238,54 @@ function _validate_edges(table, path, dataset_id, network_id, node_count)
         path,
         "rows must be ordered by (src_vertex, dst_vertex)",
     )
+    return nothing
+end
+
+function _validate_geometry_wkt(value, row_index, path, dataset_id, network_id)
+    ismissing(value) && return nothing
+    value isa AbstractString || _invalid(
+        dataset_id,
+        network_id,
+        path,
+        "row $(row_index) geometry_wkt must be empty or an EPSG:4326 LINESTRING",
+    )
+    matched = match(r"^LINESTRING \(([^()]*)\)$", value)
+    isnothing(matched) && _invalid(
+        dataset_id,
+        network_id,
+        path,
+        "row $(row_index) geometry_wkt is not a canonical LINESTRING",
+    )
+    encoded_points = split(only(matched.captures), ", ")
+    length(encoded_points) >= 2 || _invalid(
+        dataset_id,
+        network_id,
+        path,
+        "row $(row_index) geometry_wkt has fewer than two coordinates",
+    )
+    for encoded_point in encoded_points
+        ordinates = split(encoded_point, ' ')
+        length(ordinates) == 2 || _invalid(
+            dataset_id,
+            network_id,
+            path,
+            "row $(row_index) geometry_wkt has a malformed coordinate",
+        )
+        longitude = tryparse(Float64, ordinates[1])
+        latitude = tryparse(Float64, ordinates[2])
+        (!isnothing(longitude) && isfinite(longitude) && -180 <= longitude <= 180) || _invalid(
+            dataset_id,
+            network_id,
+            path,
+            "row $(row_index) geometry_wkt has an invalid longitude",
+        )
+        (!isnothing(latitude) && isfinite(latitude) && -90 <= latitude <= 90) || _invalid(
+            dataset_id,
+            network_id,
+            path,
+            "row $(row_index) geometry_wkt has an invalid latitude",
+        )
+    end
     return nothing
 end
 
