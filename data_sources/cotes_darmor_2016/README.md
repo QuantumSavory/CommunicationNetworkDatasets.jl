@@ -17,6 +17,12 @@ networks.
 Run from this directory with Julia 1.12:
 
 ```sh
+curl -fsSL 'https://datarmor.cotesdarmor.fr/data-fair/api/v1/datasets/fibre-optique-noeuds-de-la-montee-en-debit-dans-le-departement-des-cotes-darmor/raw' \
+  -o downloads/nodes.csv
+curl -fsSL 'https://datarmor.cotesdarmor.fr/data-fair/api/v1/datasets/fibre-optique-infrastructure-generale-artere-de-la-montee-en-debit-dans-le-departement-des-cotes-darmor/raw' \
+  -o downloads/arteries.csv
+curl -fsSL 'https://datarmor.cotesdarmor.fr/data-fair/api/v1/datasets/fibre-optique-cablage-optique-de-la-montee-en-debit-dans-le-departement-des-cotes-darmor/raw' \
+  -o downloads/cables.csv
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
 julia --project=. extract.jl --nodes downloads/nodes.csv --arteries downloads/arteries.csv \
   --cables downloads/cables.csv --output output/cotes_darmor_2016

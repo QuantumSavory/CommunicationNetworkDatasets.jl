@@ -14,7 +14,8 @@ endpoints of its own published route. It does not merge nearby endpoints or infe
 Run from this directory with Julia 1.12:
 
 ```sh
-curl -L '<FeatureServer query URL recorded in extract.jl>' -o downloads/source.geojson
+curl -fsSL 'https://services1.arcgis.com/wfNKYeHsOyaFyPw3/arcgis/rest/services/Australias_Submarine_Telecommunication_Cable_locations_2021/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson' \
+  -o downloads/source.geojson
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
 julia --project=. extract.jl --source downloads/source.geojson --output output/australia_submarine_cables_2021
 julia --project=../.. ../../data_sources/validate.jl australia_submarine_cables_2021 output/australia_submarine_cables_2021

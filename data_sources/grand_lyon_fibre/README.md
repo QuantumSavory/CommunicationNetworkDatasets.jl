@@ -3,7 +3,7 @@
 This extractor publishes the metropolitan public-initiative fibre layer as one network.
 
 - Source: Métropole de Lyon WFS layer `tel_telecom.fibre_rip_thd`
-- Source request: WFS 2.0 GeoJSON in EPSG:4326
+- Source request: [WFS 2.0 GeoJSON in EPSG:4326](https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon%3Atel_telecom.fibre_rip_thd&outputFormat=application%2Fjson&SRSNAME=EPSG%3A4326)
 - Retrieval date: 2026-08-08
 - Exact response SHA-256: `11fd3773ef36ed41c2075aa752b506b79d2704bebfc3f79863ac0afaa69ccfdd`
 - Source count: 11,386 features
@@ -13,7 +13,8 @@ This extractor publishes the metropolitan public-initiative fibre layer as one n
 Run from this directory with Julia 1.12:
 
 ```sh
-curl -L '<WFS URL recorded in the package catalog>' -o downloads/source.geojson
+curl -fsSL 'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon%3Atel_telecom.fibre_rip_thd&outputFormat=application%2Fjson&SRSNAME=EPSG%3A4326' \
+  -o downloads/source.geojson
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
 julia --project=. extract.jl --source downloads/source.geojson --output output/grand_lyon_fibre
 julia --project=../.. ../../data_sources/validate.jl grand_lyon_fibre output/grand_lyon_fibre
