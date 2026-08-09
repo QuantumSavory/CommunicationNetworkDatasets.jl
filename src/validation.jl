@@ -75,8 +75,10 @@ const DISTANCE_METHODS = Set([
 const NETWORK_DISTANCE_METHODS = union(DISTANCE_METHODS, Set(["mixed"]))
 const ID_PATTERN = r"^[a-z][a-z0-9_]*$"
 
-_is_nonnegative_integer(value) =
-    !ismissing(value) && value isa Integer && !(value isa Bool) && value >= 0
+_is_integer(value) = !ismissing(value) && value isa Integer && !(value isa Bool)
+_is_nonnegative_integer(value) = _is_integer(value) && value >= 0
+_is_finite_real(value) =
+    !ismissing(value) && value isa Real && !(value isa Bool) && isfinite(value)
 
 function _invalid(dataset_id, network_id, path, invariant)
     network_context = isnothing(network_id) ? "" : ", network=$(repr(network_id))"
@@ -132,7 +134,7 @@ function _require_unique_ids(values, label, path, dataset_id, network_id)
 end
 
 function _require_schema_version(table, path, dataset_id, network_id)
-    all(==(SCHEMA_VERSION), table.schema_version) || _invalid(
+    all(value -> _is_integer(value) && value == SCHEMA_VERSION, table.schema_version) || _invalid(
         dataset_id,
         network_id,
         path,
@@ -182,7 +184,7 @@ end
 
 function _validate_nodes(table, path, dataset_id, network_id)
     _require_core_columns(table, NODE_COLUMNS, path, dataset_id, network_id)
-    table.vertex == collect(1:nrow(table)) || _invalid(
+    (all(_is_integer, table.vertex) && table.vertex == collect(1:nrow(table))) || _invalid(
         dataset_id,
         network_id,
         path,
@@ -190,9 +192,9 @@ function _validate_nodes(table, path, dataset_id, network_id)
     )
     _require_unique_ids(table.node_id, "node_id", path, dataset_id, network_id)
     for (row, longitude, latitude) in zip(eachindex(table.vertex), table.longitude_deg, table.latitude_deg)
-        (!ismissing(longitude) && longitude isa Real && isfinite(longitude) && -180 <= longitude <= 180) ||
+        (_is_finite_real(longitude) && -180 <= longitude <= 180) ||
             _invalid(dataset_id, network_id, path, "row $(row) has invalid longitude_deg")
-        (!ismissing(latitude) && latitude isa Real && isfinite(latitude) && -90 <= latitude <= 90) ||
+        (_is_finite_real(latitude) && -90 <= latitude <= 90) ||
             _invalid(dataset_id, network_id, path, "row $(row) has invalid latitude_deg")
     end
     return nothing
@@ -203,16 +205,14 @@ function _validate_edges(table, path, dataset_id, network_id, node_count)
     _require_unique_ids(table.edge_id, "edge_id", path, dataset_id, network_id)
     edge_pairs = Tuple{Int,Int}[]
     for (row_index, row) in enumerate(eachrow(table))
-        (!ismissing(row.src_vertex) && !ismissing(row.dst_vertex) &&
-            row.src_vertex isa Integer && row.dst_vertex isa Integer &&
+        (_is_integer(row.src_vertex) && _is_integer(row.dst_vertex) &&
             1 <= row.src_vertex < row.dst_vertex <= node_count) || _invalid(
                 dataset_id,
                 network_id,
                 path,
                 "row $(row_index) must have 1 <= src_vertex < dst_vertex <= $(node_count)",
             )
-        (!ismissing(row.distance_m) && row.distance_m isa Real && isfinite(row.distance_m) &&
-            row.distance_m >= 0) || _invalid(
+        (_is_finite_real(row.distance_m) && row.distance_m >= 0) || _invalid(
                 dataset_id,
                 network_id,
                 path,
@@ -224,8 +224,7 @@ function _validate_edges(table, path, dataset_id, network_id, node_count)
             path,
             "row $(row_index) has unsupported distance_method $(repr(row.distance_method))",
         )
-        (!ismissing(row.contributing_source_edge_count) &&
-            row.contributing_source_edge_count isa Integer &&
+        (_is_integer(row.contributing_source_edge_count) &&
             row.contributing_source_edge_count >= 1) || _invalid(
                 dataset_id,
                 network_id,
