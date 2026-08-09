@@ -9,3 +9,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Thi
 
 - Initial package API, artifact schema, source extractors, plotting extension, documentation, and
   automation.
+- Fixed generated dataset pages so figure markup renders as HTML and regional basemaps have sharp,
+  complete coastlines.
