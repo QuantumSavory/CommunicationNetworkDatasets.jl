@@ -17,18 +17,24 @@ This extractor publishes the 279 of 285 cable features that match at least two s
 Run from this directory with Julia 1.12:
 
 ```sh
+curl -fsSL 'https://services.arcgis.com/bDAhvQYMG4WL8O5o/arcgis/rest/services/Global_Submarine_Cable_Map/FeatureServer/1/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson' \
+  -o downloads/cables.geojson
+curl -fsSL 'https://services.arcgis.com/bDAhvQYMG4WL8O5o/arcgis/rest/services/Global_Submarine_Cable_Map/FeatureServer/0/query?where=1%3D1&outFields=*&returnGeometry=true&outSR=4326&f=geojson' \
+  -o downloads/stations.geojson
 julia --project=. -e 'using Pkg; Pkg.instantiate()'
 julia --project=. extract.jl --cables downloads/cables.geojson \
   --stations downloads/stations.geojson --output output/gregs_submarine_cable_map
 julia --project=../.. ../../data_sources/validate.jl gregs_submarine_cable_map output/gregs_submarine_cable_map
 ```
 
-Stations match only to published route vertices within 25 m. The artifact records every matching
-distance. Route endpoints and exact shared vertices supply other branch nodes; visual crossings are
-not connected. Co-located source station records remain distinct nodes, including isolates when a
-route vertex is already assigned to another record. Routes and station locations are approximate.
-Per-edge distances are geodesic polyline calculations. `Distance_K` is a reported whole-system total
-and remains network metadata only.
+Stations match only to published route vertices within 25 m. Connected graph nodes and edge WKT
+retain the source route coordinates without moving route vertices to station coordinates. The
+source station coordinates and every matching distance remain in source-specific node columns.
+Route endpoints and exact shared vertices supply other branch nodes; visual crossings are not
+connected. Additional station records matched to an already assigned route vertex remain distinct
+isolated nodes at their published station coordinates. Routes and station locations are
+approximate. Per-edge distances are geodesic polyline calculations along the unchanged route.
+`Distance_K` is a reported whole-system total and remains network metadata only.
 
 The six excluded cable FIDs are 124, 230, 231, 258, 269, and 277. Their nearest unmatched stations
 are beyond 25 m or each feature has only one matched station. See `extraction_report.csv`.

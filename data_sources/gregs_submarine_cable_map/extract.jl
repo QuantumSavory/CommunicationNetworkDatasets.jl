@@ -96,12 +96,11 @@ for result in analyses
     end
     primary_by_route = Dict(route_coordinate => first(sort(matches; by=match -> (match.distance_m, match.station.fid)))
         for (route_coordinate, matches) in matches_by_route)
-    replacement = Dict(route_coordinate => match.station.coordinate for (route_coordinate, match) in primary_by_route)
-    forced = Set(values(replacement))
+    forced = Set(keys(primary_by_route))
     records = [(
         source_id="cable_$(fid)_part_$(part_index)",
         name,
-        coordinates=[get(replacement, point, point) for point in part],
+        coordinates=part,
         source_attributes_json=String(JSON3.write(feature.properties)),
     ) for (part_index, part) in enumerate(result.parts)]
     normalized = normalize_line_records(
@@ -115,17 +114,21 @@ for result in analyses
 
     nodes = normalized.nodes
     nodes[!, :source_station_fid] = Union{Missing,Int}[missing for _ in 1:nrow(nodes)]
+    nodes[!, :source_station_longitude_deg] = Union{Missing,Float64}[missing for _ in 1:nrow(nodes)]
+    nodes[!, :source_station_latitude_deg] = Union{Missing,Float64}[missing for _ in 1:nrow(nodes)]
     nodes[!, :source_station_attributes_json] = Union{Missing,String}[missing for _ in 1:nrow(nodes)]
     nodes[!, :route_match_distance_m] = Union{Missing,Float64}[missing for _ in 1:nrow(nodes)]
     vertex_by_coordinate = Dict((Float64(row.longitude_deg), Float64(row.latitude_deg)) => Int(row.vertex) for row in eachrow(nodes))
     used_station_fids = Set{Int}()
     for (route_coordinate, primary) in primary_by_route
-        vertex = vertex_by_coordinate[primary.station.coordinate]
+        vertex = vertex_by_coordinate[route_coordinate]
         nodes.node_id[vertex] = "station_$(primary.station.fid)"
         nodes.name[vertex] = primary.station.name
-        nodes.coordinate_method[vertex] = "published_station_matched_to_route"
-        nodes.note[vertex] = "Station matched to a route vertex at $(primary.distance_m) m; route geometry is approximate."
+        nodes.coordinate_method[vertex] = "route_geometry_vertex_matched_to_station"
+        nodes.note[vertex] = "Published route vertex retained; station $(primary.station.fid) is $(primary.distance_m) m away and its source coordinate is retained separately."
         nodes.source_station_fid[vertex] = primary.station.fid
+        nodes.source_station_longitude_deg[vertex] = primary.station.coordinate[1]
+        nodes.source_station_latitude_deg[vertex] = primary.station.coordinate[2]
         nodes.source_station_attributes_json[vertex] = primary.station.attributes_json
         nodes.route_match_distance_m[vertex] = primary.distance_m
         push!(used_station_fids, primary.station.fid)
@@ -139,9 +142,11 @@ for result in analyses
             longitude_deg=match.station.coordinate[1],
             latitude_deg=match.station.coordinate[2],
             coordinate_method="published_station_matched_to_route",
-            note="Co-located source station retained as a distinct node; its matched route vertex is already represented by another station.",
+            note="Additional source station retained as a distinct isolate; its matched route vertex is already represented by another station.",
             source_feature_ids="cable_$(fid)",
             source_station_fid=match.station.fid,
+            source_station_longitude_deg=match.station.coordinate[1],
+            source_station_latitude_deg=match.station.coordinate[2],
             source_station_attributes_json=match.station.attributes_json,
             route_match_distance_m=match.distance_m,
         ))
@@ -159,7 +164,7 @@ for result in analyses
         edge_count=nrow(normalized.edges),
         component_count=component_count(nrow(nodes), normalized.edges),
         original_directed=false,
-        coordinate_method="matched_stations_and_route_junctions",
+        coordinate_method="route_geometry_and_matched_stations",
         distance_method="geodesic_polyline",
         license_identifier=LICENSE,
         license_url=LICENSE_URL,
