@@ -7,12 +7,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Thi
 
 ## v0.1.0 - unreleased
 
-### New features
-
 - Initial package API, artifact schema, source extractors, plotting extension, documentation, and
   automation.
-
-### Changed
-
-- Use ParallelTestRunner, standard Buildkite test and coverage plugins, root-only Julia Dependabot
-  updates, and Julia 1.12 as the minimum supported version.

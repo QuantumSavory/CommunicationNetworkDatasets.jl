@@ -10,8 +10,7 @@ distance in metres.
 > noncommercial use, or other conditions. Inspect `datasets()` and each artifact's `README.md` and
 > `LICENSE.md` before use or redistribution.
 
-The package requires Julia 1.12 or later within Julia 1.x. It is not registered in General and has
-no semantic package release tag yet.
+The package requires Julia 1.12 or later within Julia 1.x.
 
 ```julia
 using CommunicationNetworkDatasets
