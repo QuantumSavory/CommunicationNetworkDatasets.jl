@@ -1,0 +1,12 @@
+[files]
+extend-exclude = [
+    "Artifacts.toml",
+    "data/**/*.csv",
+    "data_sources/**/*.csv",
+]
+
+[default.extend-words]
+ba = "ba"
+nd = "nd"
+ser = "ser"
+wkt = "wkt"

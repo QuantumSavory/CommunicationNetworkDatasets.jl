@@ -1,0 +1,43 @@
+env:
+  JULIA_NUM_THREADS: auto
+
+secrets:
+  - CODECOV_TOKEN
+
+steps:
+  - label: General tests
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1.12"
+      - JuliaCI/julia-test#v1: ~
+      - JuliaCI/julia-coverage#v1:
+          codecov: true
+
+  - label: JET tests
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1.12"
+    command: |
+      julia --project=test/projects/jet -e 'using Pkg; Pkg.instantiate()'
+      julia --project=test/projects/jet test/projects/jet/runtests.jl
+
+  - label: Tyler tests
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1.12"
+      - QuantumSavory/julia-xvfb#v1: ~
+    command: |
+      julia --project=test/projects/tyler -e 'using Pkg; Pkg.instantiate()'
+      julia --project=test/projects/tyler test/projects/tyler/runtests.jl
+
+  - label: Documentation
+    branches: "!dependabot/*"
+    plugins:
+      - JuliaCI/julia#v1:
+          version: "1.12"
+      - QuantumSavory/julia-xvfb#v1: ~
+    secrets:
+      - DOCUMENTER_KEY
+    command: |
+      julia --project=docs -e 'using Pkg; Pkg.instantiate()'
+      julia --project=docs docs/make.jl
