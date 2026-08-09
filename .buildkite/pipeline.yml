@@ -9,26 +9,26 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           version: "1.12"
-      - JuliaCI/julia-test#v1: ~
-      - JuliaCI/julia-coverage#v1:
-          codecov: true
+      - JuliaCI/julia-test#v1:
+          test_args: "general"
+      - JuliaCI/julia-coverage#v1: ~
 
   - label: JET tests
     plugins:
       - JuliaCI/julia#v1:
           version: "1.12"
-    command: |
-      julia --project=test/projects/jet -e 'using Pkg; Pkg.instantiate()'
-      julia --project=test/projects/jet test/projects/jet/runtests.jl
+      - JuliaCI/julia-test#v1:
+          test_args: "jet"
+      - JuliaCI/julia-coverage#v1: ~
 
   - label: Tyler tests
     plugins:
       - JuliaCI/julia#v1:
           version: "1.12"
       - QuantumSavory/julia-xvfb#v1: ~
-    command: |
-      julia --project=test/projects/tyler -e 'using Pkg; Pkg.instantiate()'
-      julia --project=test/projects/tyler test/projects/tyler/runtests.jl
+      - JuliaCI/julia-test#v1:
+          test_args: "tyler"
+      - JuliaCI/julia-coverage#v1: ~
 
   - label: Documentation
     branches: "!dependabot/*"
@@ -36,8 +36,9 @@ steps:
       - JuliaCI/julia#v1:
           version: "1.12"
       - QuantumSavory/julia-xvfb#v1: ~
+      - JuliaCI/julia-test#v1:
+          project: docs
+          run_tests: false
     secrets:
       DOCUMENTER_KEY: DOCUMENTER_KEY_CommunicationNetworkDatasets
-    command: |
-      julia --project=docs -e 'using Pkg; Pkg.instantiate()'
-      julia --project=docs docs/make.jl
+    command: julia --project=docs docs/make.jl
