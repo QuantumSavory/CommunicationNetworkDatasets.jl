@@ -52,16 +52,19 @@ published data and never repair it. Unknown identifiers raise `ArgumentError` an
 applicable discovery function.
 
 Source-specific extraction projects and their exact provenance are under [`data_sources`](data_sources).
-They do not run in CI. `openstreetmap_telecom` is implemented but intentionally has no v1 artifact.
+They do not run in CI. The AfTerFibre, OpenStreetMap, and PDOK extractors are implemented but
+intentionally have no v1 artifacts; [`data_sources/README.md`](data_sources/README.md) records the
+publication blockers and excluded candidates.
 
 ## Development
 
 Use Julia 1.12:
 
 ```sh
-julia --project=test -e 'using Pkg; Pkg.instantiate(); Pkg.test()'
-julia --project=test/jet test/jet/runtests.jl
-xvfb-run -a julia --project=test/tyler test/tyler/runtests.jl
+julia --project=test -e 'using Pkg; Pkg.instantiate()'
+julia --project=test test/runtests.jl
+julia --project=test/projects/jet test/projects/jet/runtests.jl
+xvfb-run -a julia --project=test/projects/tyler test/projects/tyler/runtests.jl
 xvfb-run -a julia --project=docs docs/make.jl
 ```
 
