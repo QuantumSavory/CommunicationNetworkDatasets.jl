@@ -168,6 +168,47 @@ end
     @test occursin("CairoMakie", hint)
 end
 
+@testitem "schema validators reject ambiguous primitive types" begin
+    using CommunicationNetworkDatasets
+
+    function captured_error(f)
+        try
+            f()
+            return nothing
+        catch error
+            return error
+        end
+    end
+
+    catalog = datasets()
+    catalog[!, :network_count] = Float64.(catalog.network_count)
+    catalog_error = captured_error() do
+        CommunicationNetworkDatasets._validate_datasets(catalog, "test-datasets.csv")
+    end
+    @test catalog_error isa ArgumentError
+    @test occursin("network_count must contain nonnegative integers", sprint(showerror, catalog_error))
+    @test occursin("test-datasets.csv", sprint(showerror, catalog_error))
+
+    dataset_id = first(datasets().dataset_id)
+    metadata = networks(dataset_id)
+    metadata[!, :node_count] = Float64.(metadata.node_count)
+    count_error = captured_error() do
+        CommunicationNetworkDatasets._validate_networks(metadata, "test-networks.csv", dataset_id)
+    end
+    @test count_error isa ArgumentError
+    @test occursin("node_count must contain nonnegative integers", sprint(showerror, count_error))
+    @test occursin(dataset_id, sprint(showerror, count_error))
+
+    metadata = networks(dataset_id)
+    metadata[!, :original_directed] = Int.(metadata.original_directed)
+    directed_error = captured_error() do
+        CommunicationNetworkDatasets._validate_networks(metadata, "test-networks.csv", dataset_id)
+    end
+    @test directed_error isa ArgumentError
+    @test occursin("original_directed must contain Boolean values", sprint(showerror, directed_error))
+    @test occursin(dataset_id, sprint(showerror, directed_error))
+end
+
 @testitem "Aqua package checks" begin
     using Aqua
     using CommunicationNetworkDatasets

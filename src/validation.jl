@@ -75,6 +75,9 @@ const DISTANCE_METHODS = Set([
 const NETWORK_DISTANCE_METHODS = union(DISTANCE_METHODS, Set(["mixed"]))
 const ID_PATTERN = r"^[a-z][a-z0-9_]*$"
 
+_is_nonnegative_integer(value) =
+    !ismissing(value) && value isa Integer && !(value isa Bool) && value >= 0
+
 function _invalid(dataset_id, network_id, path, invariant)
     network_context = isnothing(network_id) ? "" : ", network=$(repr(network_id))"
     throw(ArgumentError(
@@ -143,7 +146,7 @@ function _validate_datasets(table, path)
     _require_unique_ids(table.dataset_id, "dataset_id", path, "catalog", nothing)
     _require_unique_ids(table.artifact_name, "artifact_name", path, "catalog", nothing)
     issorted(table.dataset_id) || _invalid("catalog", nothing, path, "rows must be ordered by dataset_id")
-    all(value -> !ismissing(value) && value >= 0, table.network_count) || _invalid(
+    all(_is_nonnegative_integer, table.network_count) || _invalid(
         "catalog",
         nothing,
         path,
@@ -159,9 +162,15 @@ function _validate_networks(table, path, dataset_id)
     issorted(table.network_id) || _invalid(dataset_id, nothing, path, "rows must be ordered by network_id")
     all(method -> !ismissing(method) && method in NETWORK_DISTANCE_METHODS, table.distance_method) ||
         _invalid(dataset_id, nothing, path, "distance_method contains an unsupported value")
+    all(value -> value isa Bool, table.original_directed) || _invalid(
+        dataset_id,
+        nothing,
+        path,
+        "original_directed must contain Boolean values",
+    )
     for column in (:node_count, :edge_count, :component_count, :source_node_count,
             :source_edge_count, :self_loops_removed, :parallel_edges_combined)
-        all(value -> !ismissing(value) && value >= 0, table[!, column]) || _invalid(
+        all(_is_nonnegative_integer, table[!, column]) || _invalid(
             dataset_id,
             nothing,
             path,
