@@ -1,0 +1,79 @@
+[australia_submarine_cables_2021]
+git-tree-sha1 = "11a93649c883f3f8b1630fbc34a1ae3a2e12378a"
+lazy = true
+
+    [[australia_submarine_cables_2021.download]]
+    sha256 = "21c67d85df67e850b619aa86a3faaaf4e2108b4e4bcde156d5fb345c00f621af"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/11a93649c883f3f8b1630fbc34a1ae3a2e12378a.tar.gz"
+
+[cotes_darmor_2016]
+git-tree-sha1 = "9aeddeecc3c65f073fe8d2fa65e80f41c00bbcd4"
+lazy = true
+
+    [[cotes_darmor_2016.download]]
+    sha256 = "bc25e6d82bcfede2c77af23c1a8758eb08ba082babea18fadbf96c7f78b0ac3f"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/9aeddeecc3c65f073fe8d2fa65e80f41c00bbcd4.tar.gz"
+
+[gold_coast_fibre]
+git-tree-sha1 = "c043cc126f6934f7ef33ebcdc12955275db47096"
+lazy = true
+
+    [[gold_coast_fibre.download]]
+    sha256 = "90649666128f6e22decdfccc411bc2dfb9b5002974f800425c3a2f03d91f6b38"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/c043cc126f6934f7ef33ebcdc12955275db47096.tar.gz"
+
+[grand_lyon_fibre]
+git-tree-sha1 = "a2b500ea2f79ca162c999f4d23b7573d26f85ed3"
+lazy = true
+
+    [[grand_lyon_fibre.download]]
+    sha256 = "c27c47d52ac5548817db7131e2f3a9b156c0e1355f41cb2456694200e117dfa4"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/a2b500ea2f79ca162c999f4d23b7573d26f85ed3.tar.gz"
+
+[gregs_submarine_cable_map]
+git-tree-sha1 = "e13a8ad17f9b5a16d8dad50082f4c66bab21189c"
+lazy = true
+
+    [[gregs_submarine_cable_map.download]]
+    sha256 = "15a3758aca39f45679f0e5a46e8d6f9560c2e4e351617bbe0b1b6bdab6a44b55"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/e13a8ad17f9b5a16d8dad50082f4c66bab21189c.tar.gz"
+
+[internet_topology_zoo]
+git-tree-sha1 = "6a1a465b666d3410aaa15783579f0ed491777763"
+lazy = true
+
+    [[internet_topology_zoo.download]]
+    sha256 = "0f1b348bb345351c6637faa0710d783a0d160361a1758d8ab045d175ca4a1f88"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/6a1a465b666d3410aaa15783579f0ed491777763.tar.gz"
+
+[natural_earth_basemap]
+git-tree-sha1 = "954b52b10bc10268a08afa8854add3ce03a56f14"
+lazy = true
+
+    [[natural_earth_basemap.download]]
+    sha256 = "797153d8f5cb3329274b928b8e3ebc3c5436e84bb753222696f3af9aa89b409b"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/954b52b10bc10268a08afa8854add3ce03a56f14.tar.gz"
+
+[open_undersea_cable_map]
+git-tree-sha1 = "90aa9e53facefd051a19529e8e2ac853950bf228"
+lazy = true
+
+    [[open_undersea_cable_map.download]]
+    sha256 = "1ceb655b5988e322aa19e7319c3d670d94404b75346d216214487a20742f3e0c"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/90aa9e53facefd051a19529e8e2ac853950bf228.tar.gz"
+
+[topology_bench]
+git-tree-sha1 = "c8afff85bd6ea652cca160a7794182ce0e3bd3ad"
+lazy = true
+
+    [[topology_bench.download]]
+    sha256 = "884fa6b972a81bffdf01b463f5183a80564ceb39dda92cad65429d2849781594"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/c8afff85bd6ea652cca160a7794182ce0e3bd3ad.tar.gz"
+
+[vermont_state_fibre]
+git-tree-sha1 = "7ee9c076f5711bbf95a2c7ac8556af5a0129aedc"
+lazy = true
+
+    [[vermont_state_fibre.download]]
+    sha256 = "ac4d220ddb61d2e66a77806336878a29ebaaebb3119f09e575bcf657fd88e4c1"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/7ee9c076f5711bbf95a2c7ac8556af5a0129aedc.tar.gz"
