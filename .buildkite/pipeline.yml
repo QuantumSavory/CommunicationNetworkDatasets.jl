@@ -30,15 +30,14 @@ steps:
           test_args: "tyler"
       - JuliaCI/julia-coverage#v1: ~
 
-  - label: Documentation
+  - label: Docs
     branches: "!dependabot/*"
     plugins:
       - JuliaCI/julia#v1:
           version: "1.12"
       - QuantumSavory/julia-xvfb#v1: ~
-      - JuliaCI/julia-test#v1:
-          project: docs
-          run_tests: false
     secrets:
       DOCUMENTER_KEY: DOCUMENTER_KEY_CommunicationNetworkDatasets
-    command: julia --project=docs docs/make.jl
+    command: |
+      julia --project=docs -e 'using Pkg; Pkg.instantiate()'
+      julia -tauto --project=docs docs/make.jl
