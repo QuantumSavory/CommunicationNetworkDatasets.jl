@@ -31,12 +31,12 @@ lazy = true
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/f4a6e975e6be5da5c8feb11d012fa7169726bb3f.tar.gz"
 
 [gregs_submarine_cable_map]
-git-tree-sha1 = "bc9cff98bbde7d47dcf6df3d1994bc3090b93a9d"
+git-tree-sha1 = "e13a8ad17f9b5a16d8dad50082f4c66bab21189c"
 lazy = true
 
     [[gregs_submarine_cable_map.download]]
-    sha256 = "758a8914dc66b83f3d8e499d3fd960a216b38f2abf1b616717de55c3dd3b6804"
-    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/bc9cff98bbde7d47dcf6df3d1994bc3090b93a9d.tar.gz"
+    sha256 = "15a3758aca39f45679f0e5a46e8d6f9560c2e4e351617bbe0b1b6bdab6a44b55"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/e13a8ad17f9b5a16d8dad50082f4c66bab21189c.tar.gz"
 
 [internet_topology_zoo]
 git-tree-sha1 = "6a1a465b666d3410aaa15783579f0ed491777763"
