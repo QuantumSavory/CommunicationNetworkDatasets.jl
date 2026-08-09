@@ -135,10 +135,11 @@ function write_source_page(page_path, dataset_row, network_table, provider)
             network_id = String(network_row.network_id)
             image_path = joinpath(image_directory, network_id * ".png")
             render_plot(provider, dataset_id, network_row, image_path)
-            relative_image = "images/$(dataset_id)/$(network_id).png"
+            relative_image = "../images/$(dataset_id)/$(network_id).png"
             println(output)
             println(output, "### ", network_row.name)
             println(output)
+            println(output, "```@raw html")
             println(output, "<figure>")
             println(
                 output,
@@ -150,6 +151,7 @@ function write_source_page(page_path, dataset_row, network_table, provider)
             )
             println(output, "  <figcaption>", plot_caption(network_row), "</figcaption>")
             println(output, "</figure>")
+            println(output, "```")
         end
     end
     return nothing

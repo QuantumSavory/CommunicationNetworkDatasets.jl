@@ -21,7 +21,7 @@ makedocs(
     authors="Quantum Savory contributors",
     checkdocs=:exports,
     format=Documenter.HTML(;
-        prettyurls=get(ENV, "CI", "false") == "true",
+        prettyurls=true,
         inventory_version=string(pkgversion(CommunicationNetworkDatasets)),
         size_threshold,
         size_threshold_warn,
