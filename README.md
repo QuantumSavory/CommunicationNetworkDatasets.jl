@@ -62,8 +62,8 @@ Use Julia 1.12:
 ```sh
 julia --project=. -e 'using Pkg; Pkg.test()'
 julia --project=. -e 'using Pkg; Pkg.test(; test_args=["jet"])'
-xvfb-run -a julia --project=. -e 'using Pkg; Pkg.test(; test_args=["tyler"])'
-xvfb-run -a julia --project=docs docs/make.jl
+julia --project=. -e 'using Pkg; Pkg.test(; test_args=["tyler"])'
+julia --project=docs docs/make.jl
 ```
 
 The Tyler and documentation jobs use the QuantumSavory-hosted CI tile service. When
