@@ -36,9 +36,3 @@ finally
     close(result.map)
 end
 ```
-
-The interactive helper uses OpenStreetMap tiles by default. Package map tests and these
-documentation pages use the `ci` raster basemap at `tiles.quantumsavory.org`, with a maximum zoom
-level of 13. The basemap uses [Protomaps](https://protomaps.com/) data from
-[© OpenStreetMap contributors](https://www.openstreetmap.org/copyright), and
-[QuantumSavory](https://quantumsavory.org/) provides the hosting.
