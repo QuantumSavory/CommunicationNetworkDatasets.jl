@@ -25,7 +25,6 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           version: "1.12"
-      - QuantumSavory/julia-xvfb#v1: ~
       - JuliaCI/julia-test#v1:
           test_args: "tyler"
       - JuliaCI/julia-coverage#v1: ~
@@ -35,7 +34,6 @@ steps:
     plugins:
       - JuliaCI/julia#v1:
           version: "1.12"
-      - QuantumSavory/julia-xvfb#v1: ~
     secrets:
       DOCUMENTER_KEY: DOCUMENTER_KEY_CommunicationNetworkDatasets
     command: |

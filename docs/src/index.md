@@ -36,6 +36,3 @@ finally
     close(result.map)
 end
 ```
-
-The interactive helper uses a live tile provider by default. Package tests and these documentation
-pages use a local Natural Earth basemap and do not contact a public tile service.

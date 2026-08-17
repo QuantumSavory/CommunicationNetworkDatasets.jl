@@ -2,25 +2,12 @@ using CairoMakie
 using CommunicationNetworkDatasets
 using DataFrames: DataFrame
 using Graphs: Edge, SimpleGraph, add_edge!
-using Pkg.Artifacts: artifact_hash, artifact_path, ensure_artifact_installed
 using Test
 using Tyler
 
 const PACKAGE_ROOT = normpath(joinpath(dirname(pathof(CommunicationNetworkDatasets)), ".."))
-const ARTIFACTS_TOML = joinpath(PACKAGE_ROOT, "Artifacts.toml")
-
-function offline_provider()
-    ensure_artifact_installed("natural_earth_basemap", ARTIFACTS_TOML)
-    root = artifact_path(artifact_hash("natural_earth_basemap", ARTIFACTS_TOML))
-    return Tyler.TileProviders.Provider(
-        "file://" * joinpath(root, "{z}", "{x}", "{y}.png"),
-        Dict{Symbol,Any}(
-            :min_zoom => 0,
-            :max_zoom => 0,
-            :attribution => "Made with Natural Earth; public domain",
-        ),
-    )
-end
+include(joinpath(PACKAGE_ROOT, "ci", "CITiles.jl"))
+CairoMakie.activate!(; visible=false)
 
 function explicit_network(nodes, edges)
     graph = SimpleGraph{Int}(size(nodes, 1))
@@ -53,8 +40,18 @@ function edges_table(rows=NamedTuple[])
     return DataFrame(rows)
 end
 
-@testset "Tyler extension with offline tiles" begin
-    provider = offline_provider()
+@testset "Tyler extension with QuantumSavory CI tiles" begin
+    withenv("TILE_CI_KEY" => nothing) do
+        @test CITiles.tile_url() == CITiles.TILE_TEMPLATE
+    end
+    withenv("TILE_CI_KEY" => repeat("a", 64)) do
+        @test CITiles.tile_url() == CITiles.TILE_TEMPLATE * "?ci_key=" * repeat("a", 64)
+    end
+    withenv("TILE_CI_KEY" => "invalid") do
+        @test_throws ArgumentError CITiles.provider()
+    end
+    CITiles.preflight()
+    provider = CITiles.provider()
     result = plot_network(
         "australia_submarine_cables_2021",
         first(networks("australia_submarine_cables_2021").network_id);
@@ -65,6 +62,7 @@ end
         @test keys(result) == (
             :figure, :axis, :map, :node_plot, :edge_plot, :omitted_vertices, :omitted_edges,
         )
+        @test result.map.provider === provider
         @test isempty(result.omitted_vertices)
         @test isempty(result.omitted_edges)
         wait(result.map)

@@ -2,33 +2,15 @@ module GenerateDocumentation
 
 using CairoMakie
 using CommunicationNetworkDatasets
-using Pkg.Artifacts: artifact_hash, artifact_path, ensure_artifact_installed
 using PrettyTables: pretty_table
 using Tyler
 
-include("basemap/NaturalEarthBasemap.jl")
+include(joinpath(@__DIR__, "..", "ci", "CITiles.jl"))
+CairoMakie.activate!(; visible=false)
 
-const PACKAGE_ROOT = normpath(joinpath(@__DIR__, ".."))
-const ARTIFACTS_TOML = joinpath(PACKAGE_ROOT, "Artifacts.toml")
 const GENERATED_ROOT = joinpath(@__DIR__, "src", "generated")
 const IMAGE_ROOT = joinpath(GENERATED_ROOT, "images")
-const BASEMAP_NAME = "natural_earth_basemap"
 const FIGURE_SIZE = (960, 600)
-
-function offline_provider()
-    ensure_artifact_installed(BASEMAP_NAME, ARTIFACTS_TOML)
-    hash = artifact_hash(BASEMAP_NAME, ARTIFACTS_TOML)
-    isnothing(hash) && error("docs basemap artifact $(repr(BASEMAP_NAME)) is not bound")
-    root = artifact_path(hash)
-    return Tyler.TileProviders.Provider(
-        "file://" * joinpath(root, "{z}", "{x}", "{y}.png"),
-        Dict{Symbol,Any}(
-            :min_zoom => 0,
-            :max_zoom => 0,
-            :attribution => "Made with Natural Earth; public domain",
-        ),
-    )
-end
 
 function markdown_table(table)
     output = IOBuffer()
@@ -62,8 +44,14 @@ end
 
 function modification_notice()
     return "CommunicationNetworkDatasets.jl normalized the source records into a simple " *
-        "undirected graph, normalized identifiers and units, and rendered this plot over a " *
-        "modified Natural Earth public-domain basemap."
+        "undirected graph, normalized identifiers and units, and rendered this plot over " *
+        "raster basemap tiles."
+end
+
+function basemap_attribution()
+    return "<a href=\"https://protomaps.com/\">Protomaps</a> " *
+        "<a href=\"https://www.openstreetmap.org/copyright\">© OpenStreetMap contributors</a>; " *
+        "hosted by <a href=\"https://quantumsavory.org/\">QuantumSavory</a>."
 end
 
 function plot_caption(row)
@@ -73,10 +61,11 @@ function plot_caption(row)
     modification = html_escape(modification_notice())
     return "<strong>$(name).</strong> <strong>License:</strong> $(license_link(row)) " *
         "<strong>Attribution:</strong> $(attribution) <strong>Modifications:</strong> " *
-        "$(modification) <strong>Use and redistribution:</strong> $(restrictions)"
+        "$(modification) <strong>Use and redistribution:</strong> $(restrictions) " *
+        "<strong>Basemap:</strong> $(basemap_attribution())"
 end
 
-function render_plot(provider, basemap_polygons, dataset_id, network_row, image_path)
+function render_plot(provider, dataset_id, network_row, image_path)
     network_id = String(network_row.network_id)
     result = nothing
     try
@@ -88,7 +77,6 @@ function render_plot(provider, basemap_polygons, dataset_id, network_row, image_
             map_kwargs=(;
                 fetching_scheme=Tyler.SimpleTiling(),
                 max_parallel_downloads=1,
-                plot_config=Tyler.PlotConfig(; preprocess=NaturalEarthBasemap.ocean_tile),
             ),
         )
         isempty(result.omitted_vertices) || error(
@@ -97,7 +85,6 @@ function render_plot(provider, basemap_polygons, dataset_id, network_row, image_
         isempty(result.omitted_edges) || error(
             "$(dataset_id)/$(network_id): plot omitted edges $(result.omitted_edges)",
         )
-        NaturalEarthBasemap.draw!(result.axis, basemap_polygons)
         wait(result.map)
         CairoMakie.save(image_path, result.figure; px_per_unit=1)
         filesize(image_path) > 1_000 || error(
@@ -109,7 +96,7 @@ function render_plot(provider, basemap_polygons, dataset_id, network_row, image_
     return nothing
 end
 
-function write_source_page(page_path, dataset_row, network_table, provider, basemap_polygons)
+function write_source_page(page_path, dataset_row, network_table, provider)
     dataset_id = String(dataset_row.dataset_id)
     image_directory = joinpath(IMAGE_ROOT, dataset_id)
     mkpath(image_directory)
@@ -125,6 +112,12 @@ function write_source_page(page_path, dataset_row, network_table, provider, base
         println(output, "- Citation: ", dataset_row.citation)
         println(output, "- Modifications: ", modification_notice())
         println(output, "- Use and redistribution: ", dataset_row.redistribution_notes)
+        println(
+            output,
+            "- Basemap: [Protomaps](https://protomaps.com/) " *
+            "[© OpenStreetMap contributors](https://www.openstreetmap.org/copyright); " *
+            "hosted by [QuantumSavory](https://quantumsavory.org/).",
+        )
         println(output)
         println(output, "## Source metadata")
         println(output)
@@ -141,7 +134,7 @@ function write_source_page(page_path, dataset_row, network_table, provider, base
         for network_row in eachrow(network_table)
             network_id = String(network_row.network_id)
             image_path = joinpath(image_directory, network_id * ".png")
-            render_plot(provider, basemap_polygons, dataset_id, network_row, image_path)
+            render_plot(provider, dataset_id, network_row, image_path)
             relative_image = "../images/$(dataset_id)/$(network_id).png"
             println(output)
             println(output, "### ", network_row.name)
@@ -189,10 +182,10 @@ function generate(; dataset_ids=nothing)
     rows = selected_rows(catalog, dataset_ids)
     isempty(rows) && error("documentation selection contains no datasets")
 
+    CITiles.preflight()
+    provider = CITiles.provider()
     isdir(GENERATED_ROOT) && rm(GENERATED_ROOT; recursive=true)
     mkpath(IMAGE_ROOT)
-    provider = offline_provider()
-    basemap_polygons = NaturalEarthBasemap.load_polygons()
     expected_images = 0
     for dataset_row in rows
         dataset_id = String(dataset_row.dataset_id)
@@ -203,7 +196,6 @@ function generate(; dataset_ids=nothing)
             dataset_row,
             network_table,
             provider,
-            basemap_polygons,
         )
     end
 
