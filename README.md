@@ -51,9 +51,9 @@ published data and never repair it. Unknown identifiers raise `ArgumentError` an
 applicable discovery function.
 
 Source-specific extraction projects and their exact provenance are under [`data_sources`](data_sources).
-They do not run in CI. The AfTerFibre, OpenStreetMap, and PDOK extractors are implemented but
-intentionally have no v1 artifacts; [`data_sources/README.md`](data_sources/README.md) records the
-publication blockers and excluded candidates.
+They do not run in CI. The OpenStreetMap extractor is implemented but intentionally has no v1
+artifact; [`data_sources/README.md`](data_sources/README.md) records the publication blocker and
+excluded candidates.
 
 ## Development
 

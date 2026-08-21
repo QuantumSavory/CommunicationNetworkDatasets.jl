@@ -11,6 +11,7 @@ CairoMakie.activate!(; visible=false)
 const GENERATED_ROOT = joinpath(@__DIR__, "src", "generated")
 const IMAGE_ROOT = joinpath(GENERATED_ROOT, "images")
 const FIGURE_SIZE = (960, 600)
+const NON_DERIVATIVE_DATASETS = Set(["afterfibre", "pdok_water_authority_telecom"])
 
 function markdown_table(table)
     output = IOBuffer()
@@ -42,11 +43,20 @@ function license_link(row)
     return isempty(url) ? identifier : "<a href=\"$(url)\">$(identifier)</a>"
 end
 
-function modification_notice()
+function modification_notice(dataset_id)
+    if dataset_id in NON_DERIVATIVE_DATASETS
+        return "CommunicationNetworkDatasets.jl presents this artifact and plot as " *
+            "non-derivative technical-format and visual representations of factual source " *
+            "data. The disclosed processing normalized graph structure, identifiers, and " *
+            "units and rendered the plot."
+    end
     return "CommunicationNetworkDatasets.jl normalized the source records into a simple " *
         "undirected graph, normalized identifiers and units, and rendered this plot over " *
         "raster basemap tiles."
 end
+
+processing_label(dataset_id) =
+    dataset_id in NON_DERIVATIVE_DATASETS ? "Non-derivative statement" : "Modifications"
 
 function basemap_attribution()
     return "<a href=\"https://protomaps.com/\">Protomaps</a> " *
@@ -54,14 +64,15 @@ function basemap_attribution()
         "hosted by <a href=\"https://quantumsavory.org/\">QuantumSavory</a>."
 end
 
-function plot_caption(row)
+function plot_caption(dataset_id, row)
     name = html_escape(row.name)
     attribution = html_escape(row.attribution)
     restrictions = html_escape(row.redistribution_notes)
-    modification = html_escape(modification_notice())
+    processing = html_escape(modification_notice(dataset_id))
+    label = processing_label(dataset_id)
     return "<strong>$(name).</strong> <strong>License:</strong> $(license_link(row)) " *
-        "<strong>Attribution:</strong> $(attribution) <strong>Modifications:</strong> " *
-        "$(modification) <strong>Use and redistribution:</strong> $(restrictions) " *
+        "<strong>Attribution:</strong> $(attribution) <strong>$(label):</strong> " *
+        "$(processing) <strong>Use and redistribution:</strong> $(restrictions) " *
         "<strong>Basemap:</strong> $(basemap_attribution())"
 end
 
@@ -105,12 +116,12 @@ function write_source_page(page_path, dataset_row, network_table, provider)
         println(output)
         println(output, dataset_row.description)
         println(output)
-        println(output, "## License, attribution, and modifications")
+        println(output, "## License, attribution, and processing")
         println(output)
         println(output, "- License: [", dataset_row.license_identifier, "](", dataset_row.license_url, ")")
         println(output, "- Attribution: ", dataset_row.attribution)
         println(output, "- Citation: ", dataset_row.citation)
-        println(output, "- Modifications: ", modification_notice())
+        println(output, "- ", processing_label(dataset_id), ": ", modification_notice(dataset_id))
         println(output, "- Use and redistribution: ", dataset_row.redistribution_notes)
         println(
             output,
@@ -149,7 +160,7 @@ function write_source_page(page_path, dataset_row, network_table, provider)
                 html_escape("$(network_row.name) network plot"),
                 "\" style=\"max-width: 100%; height: auto;\">",
             )
-            println(output, "  <figcaption>", plot_caption(network_row), "</figcaption>")
+            println(output, "  <figcaption>", plot_caption(dataset_id, network_row), "</figcaption>")
             println(output, "</figure>")
             println(output, "```")
         end

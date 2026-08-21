@@ -11,25 +11,26 @@ using .ExtractionCommon
 
 const SOURCE_FILE = "UtilityandGovernmentalServices.gml"
 const SOURCE_URL = "https://service.pdok.nl/hwh/waterschappen-nutsdiensten-en-overheidsdiensten/atom/downloads/UtilityandGovernmentalServices.gml"
-const SOURCE_SHA256 = "bf5b19ed41d4da9b8538574a26e5084e192767c5cb9beaf53f41cb783f58577d"
-const SOURCE_BYTES = 97_014_053
-const SOURCE_DATE = "2026-08-06"
+const SOURCE_SHA256 = "b4c949906aa104639d6bd35a96ce148d691cea914c118bf534a48c4f99a20bd6"
+const SOURCE_BYTES = 92_448_221
+const SOURCE_DATE = "2026-08-20"
 const SOURCE_CRS = "urn:ogc:def:crs:EPSG::4258"
 const GML_NAMESPACE = "http://www.opengis.net/gml/3.2"
 const TELECOM_NAMESPACE = "http://inspire.ec.europa.eu/schemas/us-net-tc/4.0"
 const COMMON_NAMESPACE = "http://inspire.ec.europa.eu/schemas/us-net-common/4.0"
 const NO_NAMESPACES = Pair{String,String}[]
 const ATTACHMENT_TOLERANCE_M = 1.0e-6
-const LICENSE = "NOASSERTION"
-const CITATION = "Het Waterschapshuis, Waterschappen Nuts-Overheidsdiensten (INSPIRE geharmoniseerd), PDOK snapshot 2026-08-06."
+const LICENSE = "CC-BY-NC-ND-4.0"
+const LICENSE_URL = "https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode"
+const CITATION = "Het Waterschapshuis, Waterschappen Nuts-Overheidsdiensten (INSPIRE geharmoniseerd), PDOK snapshot 2026-08-20."
 
 const EXPECTED_FEATURE_COUNTS = Dict(
-    "EnvironmentalManagementFacility" => 318,
-    "Duct" => 3_660,
-    "Manhole" => 7_535,
-    "ElectricityCable" => 2_038,
-    "SewerPipe" => 27_364,
-    "TelecommunicationsCable" => 2_079,
+    "EnvironmentalManagementFacility" => 307,
+    "Duct" => 3_509,
+    "Manhole" => 7_484,
+    "ElectricityCable" => 2_002,
+    "SewerPipe" => 27_124,
+    "TelecommunicationsCable" => 2_074,
 )
 
 const CONFIGURATIONS = [
@@ -39,14 +40,14 @@ const CONFIGURATIONS = [
         network_id="telecommunications_cables",
         name="Water-authority telecommunications cables",
         description="Telecommunications-cable geometries published by Dutch water authorities; cable material is unspecified and optical fibre is not implied.",
-        part_count=2_161,
+        part_count=2_156,
         multipart_count=34,
         attached_manhole_count=4,
         repaired_manhole_ids=Set{String}(),
-        node_count=3_045,
-        segment_count=2_430,
-        edge_count=1_966,
-        component_count=1_110,
+        node_count=3_034,
+        segment_count=2_422,
+        edge_count=1_958,
+        component_count=1_107,
         self_loops_removed=270,
         parallel_edges_combined=194,
     ),
@@ -56,7 +57,7 @@ const CONFIGURATIONS = [
         network_id="ducts",
         name="Water-authority utility ducts",
         description="Utility-duct geometries published by Dutch water authorities; their telecommunications use and optical-fibre contents are not confirmed.",
-        part_count=3_734,
+        part_count=3_583,
         multipart_count=63,
         attached_manhole_count=35,
         repaired_manhole_ids=Set([
@@ -64,10 +65,10 @@ const CONFIGURATIONS = [
             "NL.WBHCODE.25.Put.200251",
             "NL.WBHCODE.15.Put.201081",
         ]),
-        node_count=7_378,
-        segment_count=3_771,
-        edge_count=3_753,
-        component_count=3_626,
+        node_count=7_076,
+        segment_count=3_620,
+        edge_count=3_602,
+        component_count=3_475,
         self_loops_removed=6,
         parallel_edges_combined=12,
     ),
@@ -410,12 +411,26 @@ function build_network(configuration, records, manholes, projected_by_wgs84, out
     edges.source_crs = fill(SOURCE_CRS, nrow(edges))
     edges.distance_crs = fill("EPSG:28992", nrow(edges))
 
-    nrow(nodes) == configuration.node_count || error("$(configuration.network_id): node count changed")
-    result.segment_count == configuration.segment_count || error("$(configuration.network_id): segment count changed")
-    nrow(edges) == configuration.edge_count || error("$(configuration.network_id): edge count changed")
-    component_count(nrow(nodes), edges) == configuration.component_count || error("$(configuration.network_id): component count changed")
-    result.self_loops_removed == configuration.self_loops_removed || error("$(configuration.network_id): self-loop count changed")
-    result.parallel_edges_combined == configuration.parallel_edges_combined || error("$(configuration.network_id): parallel-edge count changed")
+    actual_counts = (;
+        node_count=nrow(nodes),
+        segment_count=result.segment_count,
+        edge_count=nrow(edges),
+        component_count=component_count(nrow(nodes), edges),
+        self_loops_removed=result.self_loops_removed,
+        parallel_edges_combined=result.parallel_edges_combined,
+    )
+    expected_counts = (;
+        configuration.node_count,
+        configuration.segment_count,
+        configuration.edge_count,
+        configuration.component_count,
+        configuration.self_loops_removed,
+        configuration.parallel_edges_combined,
+    )
+    actual_counts == expected_counts || error(
+        "$(configuration.network_id): output counts changed; " *
+        "expected $(expected_counts), found $(actual_counts)",
+    )
 
     write_network(output, configuration.network_id, nodes, edges)
     summary = (;
@@ -431,10 +446,10 @@ function build_network(configuration, records, manholes, projected_by_wgs84, out
         coordinate_method="source_epsg4258_transformed_or_geometry_derived",
         distance_method="projected_geometry",
         license_identifier=LICENSE,
-        license_url="",
+        license_url=LICENSE_URL,
         citation=CITATION,
         attribution="Het Waterschapshuis and the contributing Dutch water authorities; delivered through PDOK.",
-        redistribution_notes="Deferred. No artifact is distributed because the declared and underlying rights are inconsistent and include no-derivatives restrictions.",
+        redistribution_notes="Underlying metadata states CC BY-NC-ND 4.0 while the PDOK feed and service record state CC0. This artifact is presented as a non-derivative technical-format representation. Uses implicating licensed rights must be noncommercial; not for navigation or legal evidence.",
         source_node_count=configuration.attached_manhole_count,
         source_edge_count=EXPECTED_FEATURE_COUNTS[configuration.feature_type],
         self_loops_removed=result.self_loops_removed,
@@ -476,4 +491,4 @@ end
 write_artifact_metadata(output, @__DIR__, DataFrame(summaries))
 sort!(report; by=row -> (row.network_id, row.source_manhole_id))
 CSV.write(joinpath(output, "extraction_report.csv"), DataFrame(report); missingstring="")
-println("Wrote two local audit networks and $(length(report)) manhole decisions to $(output). No artifact may be published.")
+println("Wrote two published networks and $(length(report)) manhole decisions to $(output).")

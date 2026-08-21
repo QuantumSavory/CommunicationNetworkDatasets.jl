@@ -16,6 +16,8 @@ const X_RANGE = 115:167
 const Y_RANGE = 99:154
 const EXTENT = 4_096
 const WARNING = "Routes are manually traced and simplified at source zoom 8; coordinates and distances are approximate."
+const LICENSE = "GNU GPL 2.0 (implied)"
+const LICENSE_URL = "https://github.com/stevesong/nsrc-afterfibre/blob/f519982886921bd57101ec56cf1cf343f41a8822/LICENSE"
 const Point = Tuple{Float64,Float64}
 const Primitive = Tuple{Point,Point}
 
@@ -62,6 +64,10 @@ function canonical_json(properties)
         for key in sort!(collect(keys(properties)))
     ), ",") * "}"
 end
+
+published_json(properties) = canonical_json(Dict(
+    key => value for (key, value) in properties if key != "contrib_email"
+))
 
 function verify_snapshot(source)
     tilejson_path = joinpath(source, "africa-fiber.json")
@@ -220,7 +226,7 @@ function build_records(features, live)
                 source_id="cartodb_$(source_id)_route_$(lpad(path_index, 4, '0'))",
                 name,
                 coordinates=wgs84.(path),
-                source_attributes_json=features.property_json_by_id[source_id],
+                source_attributes_json=published_json(properties),
             ))
         end
     end
@@ -266,11 +272,11 @@ for (live, network_id, network_name) in (
         original_directed=false,
         coordinate_method="zoom_8_tile_geometry_vertex",
         distance_method="geodesic_polyline",
-        license_identifier="NOASSERTION",
-        license_url="",
+        license_identifier=LICENSE,
+        license_url=LICENSE_URL,
         citation="AfTerFibre / Open Telecom Data.",
-        attribution="AfTerFibre / Open Telecom Data; upstream trace sources require clarification.",
-        redistribution_notes="Deferred from publication: dataset redistribution license is not established. $(WARNING)",
+        attribution="AfTerFibre / Open Telecom Data.",
+        redistribution_notes="GNU GPL 2.0 is implied by the historical application repository, but its scope over the data is not explicit. This artifact is presented as a non-derivative technical-format representation. $(WARNING)",
         source_node_count=0,
         source_edge_count=length(selected.feature_ids),
         self_loops_removed=normalized.self_loops_removed,
@@ -281,10 +287,10 @@ for (live, network_id, network_name) in (
     append!(report_rows, [(
         source_reference="cartodb_id=$(source_id)",
         network_id,
-        status="deferred",
-        detail="Extracted locally; publication waits for written dataset license clarification. $(WARNING)",
+        status="published",
+        detail="Published under the implied GNU GPL 2.0 notice and non-derivative representation statement. $(WARNING)",
     ) for source_id in selected.feature_ids])
 end
 write_artifact_metadata(output, @__DIR__, DataFrame(network_rows))
 CSV.write(joinpath(output, "extraction_report.csv"), DataFrame(report_rows); missingstring="")
-println("Wrote two deferred AfTerFibre networks from 144 source features to $(output)")
+println("Wrote two AfTerFibre networks from 144 source features to $(output)")

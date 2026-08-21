@@ -1,8 +1,8 @@
 # PDOK water-authority telecommunications and duct data
 
-> **Deferred: no artifact is published.** The source rights are contradictory. The
-> extractor is complete and reproducible, but its output is for local technical audit
-> only. See [LICENSE.md](LICENSE.md).
+This extractor publishes telecommunications-cable and duct networks from the harmonized
+INSPIRE dataset. The source rights contain conflicting Creative Commons notices; see
+[LICENSE.md](LICENSE.md) before use or redistribution.
 
 ## Source snapshot
 
@@ -11,13 +11,13 @@ snapshot is the ATOM file `UtilityandGovernmentalServices.gml`:
 
 - download: <https://service.pdok.nl/hwh/waterschappen-nutsdiensten-en-overheidsdiensten/atom/downloads/UtilityandGovernmentalServices.gml>
 - dataset feed: <https://service.pdok.nl/hwh/waterschappen-nutsdiensten-en-overheidsdiensten/atom/waterschappen_nutsoverheidsdiensten_inspire_geharmoniseerd.xml>
-- feed update: `2026-08-06T00:00:00Z`
-- HTTP Last-Modified: `2026-08-06T10:38:29Z`
-- size: `97,014,053` bytes
-- SHA-256: `bf5b19ed41d4da9b8538574a26e5084e192767c5cb9beaf53f41cb783f58577d`
+- feed update: `2026-08-20T00:00:00Z`
+- HTTP Last-Modified: `2026-08-20T10:38:59Z`
+- size: `92,448,221` bytes
+- SHA-256: `b4c949906aa104639d6bd35a96ce148d691cea914c118bf534a48c4f99a20bd6`
 
-The source contains 2,079 `TelecommunicationsCable` features, 3,660 `Duct` features,
-and 7,535 `Manhole` features. It also contains electricity cables, sewer pipes, and
+The source contains 2,074 `TelecommunicationsCable` features, 3,509 `Duct` features,
+and 7,484 `Manhole` features. It also contains electricity cables, sewer pipes, and
 environmental-management facilities, which this extractor excludes.
 
 The service provides WMS and ATOM, but no bulk WFS or OGC API Features endpoint. The
@@ -34,10 +34,10 @@ julia --project=data_sources/pdok_water_authority_telecom -e \
 julia --project=data_sources/pdok_water_authority_telecom \
   data_sources/pdok_water_authority_telecom/extract.jl \
   --gml /absolute/path/to/UtilityandGovernmentalServices.gml \
-  --output /absolute/path/to/local-audit-output
+  --output /absolute/path/to/output/pdok_water_authority_telecom
 
 julia --project=. data_sources/validate.jl \
-  pdok_water_authority_telecom /absolute/path/to/local-audit-output
+  pdok_water_authority_telecom /absolute/path/to/output/pdok_water_authority_telecom
 ```
 
 Do not commit the source file or output directory. No manifest is committed for this
@@ -65,8 +65,8 @@ The output has two simple undirected networks:
 
 | Network ID | Nodes | Edges | Components |
 |---|---:|---:|---:|
-| `telecommunications_cables` | 3,045 | 1,966 | 1,110 |
-| `ducts` | 7,378 | 3,753 | 3,626 |
+| `telecommunications_cables` | 3,034 | 1,958 | 1,107 |
+| `ducts` | 7,076 | 3,602 | 3,475 |
 
 Neither network is described as optical fibre. The source cable-material and duct-width
 fields are empty in this snapshot.
@@ -92,6 +92,8 @@ self-loops, then combines 194 and 12 parallel edge records respectively.
 ## Rights and attribution
 
 Attribution: Het Waterschapshuis and the contributing Dutch water authorities, delivered
-through PDOK. The ATOM feed states CC0, while source and underlying rights information
-includes CC BY-NC-ND restrictions. The effective license is therefore recorded as
-`NOASSERTION`. No extracted artifact, catalog row, or generated source page is published.
+through PDOK. The ATOM feed and service record state CC0, while the underlying dataset
+metadata states CC BY-NC-ND 4.0 and includes navigation and legal-evidence limitations.
+The artifact catalog conservatively records `CC-BY-NC-ND-4.0`. For licensing purposes,
+CommunicationNetworkDatasets.jl presents the artifact as a non-derivative technical-format
+representation and asserts no rights in the upstream data. See [LICENSE.md](LICENSE.md).

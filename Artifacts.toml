@@ -1,3 +1,11 @@
+[afterfibre]
+git-tree-sha1 = "a58b93cd761cc133fd8ad3454e5c398eaddec130"
+lazy = true
+
+    [[afterfibre.download]]
+    sha256 = "ee2ed9156e205e74dc4d0f1340e8f7664ec0da6dda6860d7bc1fba7ce34a1095"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/a58b93cd761cc133fd8ad3454e5c398eaddec130.tar.gz"
+
 [australia_submarine_cables_2021]
 git-tree-sha1 = "11a93649c883f3f8b1630fbc34a1ae3a2e12378a"
 lazy = true
@@ -53,6 +61,14 @@ lazy = true
     [[open_undersea_cable_map.download]]
     sha256 = "1ceb655b5988e322aa19e7319c3d670d94404b75346d216214487a20742f3e0c"
     url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/90aa9e53facefd051a19529e8e2ac853950bf228.tar.gz"
+
+[pdok_water_authority_telecom]
+git-tree-sha1 = "66dbf586ef0670d44612ed1328235e308cba0d6f"
+lazy = true
+
+    [[pdok_water_authority_telecom.download]]
+    sha256 = "2b5863a1009047075fad907d9245a0dab713af2559f82c02ceb3994c74a7dc53"
+    url = "https://github.com/QuantumSavory/CommunicationNetworkDatasets.jl/releases/download/data-v1/66dbf586ef0670d44612ed1328235e308cba0d6f.tar.gz"
 
 [topology_bench]
 git-tree-sha1 = "c8afff85bd6ea652cca160a7794182ce0e3bd3ad"

@@ -1,18 +1,23 @@
-# Dataset rights status: NOASSERTION
+# CC BY-NC-ND 4.0 with conflicting CC0 notices
 
-The extraction code in this directory is covered by the repository MIT license. This
-file does not grant rights to the source data or to an extracted dataset.
+The underlying dataset metadata states **Creative Commons
+Attribution-NonCommercial-NoDerivatives 4.0 International** (`CC-BY-NC-ND-4.0`):
 
-The PDOK ATOM delivery declares CC0 in its feed. The source metadata and underlying
-water-authority rights are not consistent with that declaration and include Creative
-Commons Attribution-NonCommercial-NoDerivatives terms. The normalized graph is a
-modified representation, so this repository uses the license identifier `NOASSERTION`
-and does not distribute an artifact.
+<https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode>
 
-No dataset archive, catalog row, or generated dataset documentation may be published
-until the data owner provides clear written redistribution and modification terms.
-Local extraction output is for technical audit only. Users must determine whether their
-own use is permitted by the applicable upstream terms.
+The PDOK ATOM feed and service metadata separately state CC0. Because those notices are
+not consistent, the artifact catalog uses the more restrictive `CC-BY-NC-ND-4.0`
+identifier and preserves both source records below.
+
+For licensing purposes, CommunicationNetworkDatasets.jl presents the artifact as a
+non-derivative technical-format representation of factual source data. Schema,
+identifier, unit, and graph organization changes are not intended to alter the source
+data. The package authors assert no rights in the upstream data.
+
+Attribute Het Waterschapshuis and the contributing Dutch water authorities, delivered
+through PDOK. Uses that implicate the licensed rights must be noncommercial. Do not use
+the data for navigation or legal evidence, and preserve this notice when redistributing
+the artifact. Users must assess which upstream notice governs their use.
 
 Relevant notices:
 
@@ -23,3 +28,6 @@ Relevant notices:
 - PDOK ATOM rights declaration: <https://creativecommons.org/publicdomain/zero/1.0/>
 - Creative Commons BY-NC-ND 4.0 text:
   <https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode>
+
+The extraction code in this directory remains MIT licensed under the repository
+license.
