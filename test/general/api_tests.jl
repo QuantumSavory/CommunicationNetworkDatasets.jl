@@ -17,15 +17,15 @@ using Test
 
     network_id = first(first_network_catalog.network_id)
     first_load = load_network(dataset_id, network_id)
-    original_node_name = first_load.nodes.name[1]
-    original_edge_name = first_load.edges.name[1]
-    first_load.nodes.name[1] = "caller mutation"
-    first_load.edges.name[1] = "caller mutation"
+    original_node_note = first_load.nodes.note[1]
+    original_edge_note = first_load.edges.distance_note[1]
+    first_load.nodes.note[1] = "caller mutation"
+    first_load.edges.distance_note[1] = "caller mutation"
     empty!(first_load.distances)
     rem_edge!(first_load.graph, first(edges(first_load.graph)))
     second_load = load_network(dataset_id, network_id)
-    @test second_load.nodes.name[1] == original_node_name
-    @test second_load.edges.name[1] == original_edge_name
+    @test second_load.nodes.note[1] == original_node_note
+    @test second_load.edges.distance_note[1] == original_edge_note
     @test !isempty(second_load.distances)
     @test ne(second_load.graph) > ne(first_load.graph)
 

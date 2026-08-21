@@ -30,6 +30,7 @@ using Test
         "geodesic_endpoints", "scaled_geodesic_endpoints", "modeled",
     ])
     EXPECTED_DATASETS = Dict(
+        "afterfibre" => (network_count=2, license="GNU GPL 2.0 (implied)", notice="GNU GPL 2.0 (implied)"),
         "australia_submarine_cables_2021" => (network_count=16, license="CC-BY-4.0", notice="CC-BY-4.0"),
         "cotes_darmor_2016" => (network_count=2, license="etalab-2.0", notice="etalab-2.0"),
         "gold_coast_fibre" => (network_count=1, license="CC-BY-3.0-AU", notice="CC-BY-3.0-AU"),
@@ -37,6 +38,7 @@ using Test
         "gregs_submarine_cable_map" => (network_count=279, license="GNU GPL, version unspecified", notice="GNU GPL, version unspecified"),
         "internet_topology_zoo" => (network_count=85, license="CC-BY-4.0", notice="CC-BY-4.0"),
         "open_undersea_cable_map" => (network_count=519, license="CC-BY-NC-SA-3.0", notice="Attribution-NonCommercial-ShareAlike"),
+        "pdok_water_authority_telecom" => (network_count=2, license="CC-BY-NC-ND-4.0", notice="CC-BY-NC-ND-4.0"),
         "topology_bench" => (network_count=105, license="CC-BY-4.0", notice="CC-BY-4.0"),
         "vermont_state_fibre" => (network_count=2, license="Vermont-Open-Geodata-Policy", notice="non-value-added"),
     )
@@ -44,7 +46,7 @@ using Test
     catalog = datasets()
     @test names(catalog) == DATASET_COLUMNS
     @test Set(String.(catalog.dataset_id)) == Set(keys(EXPECTED_DATASETS))
-    @test sum(catalog.network_count) == 1_010
+    @test sum(catalog.network_count) == 1_014
     @test all(catalog.schema_version .== 1)
     @test all(id -> occursin(r"^[a-z][a-z0-9_]*$", id), catalog.dataset_id)
     @test allunique(catalog.dataset_id)

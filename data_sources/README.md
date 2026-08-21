@@ -8,6 +8,7 @@ source snapshots and produced datasets retain their upstream terms.
 
 | Dataset ID | Published networks | Upstream data terms |
 |---|---:|---|
+| `afterfibre` | 2 | GNU GPL 2.0 implied by the historical application repository; data scope is ambiguous |
 | `australia_submarine_cables_2021` | 16 | CC BY 4.0 |
 | `cotes_darmor_2016` | 2 | French Open Licence 2.0 |
 | `gold_coast_fibre` | 1 | CC BY 3.0 Australia |
@@ -15,26 +16,20 @@ source snapshots and produced datasets retain their upstream terms.
 | `gregs_submarine_cable_map` | 279 | Literal “GNU GPL, version unspecified”; ambiguous version and scope |
 | `internet_topology_zoo` | 85 | CC BY 4.0 |
 | `open_undersea_cable_map` | 519 | CC BY-NC-SA 3.0 |
+| `pdok_water_authority_telecom` | 2 | CC BY-NC-ND 4.0 used conservatively; conflicting CC0 notices and a non-derivative assertion |
 | `topology_bench` | 105 | CC BY 4.0 |
 | `vermont_state_fibre` | 2 | Vermont custom terms, including a direct-resale restriction |
 
-The release contains 1,010 semantic networks. `Artifacts.toml` binds immutable, content-hash-named
+The release contains 1,014 semantic networks. `Artifacts.toml` binds immutable, content-hash-named
 archives from the data-only `data-v1` GitHub release. Read each extractor README and artifact
 license before using or redistributing data.
 
-## Complete but deferred extractors
+## Complete but deferred extractor
 
-- `afterfibre`: The TileJSON/MVT extractor is complete and checked against all 2,968 pinned zoom-8
-  requests. The application does not provide a first-party dataset license grant. Historical GPL
-  terms cover website code, not necessarily traced data. Publication waits for written permission.
 - `openstreetmap_telecom`: The explicit-PBF ODbL extractor is complete and checked on the real
   Halifax extract. A reproducible full-planet snapshot and publication run are later work.
-- `pdok_water_authority_telecom`: The ATOM/GML extractor is complete, but the authoritative
-  underlying dataset metadata states CC BY-NC-ND 4.0. A normalized graph is an adapted database,
-  so publication waits for written clarification. The PDOK service-level CC0 record does not
-  override the underlying dataset record.
 
-Deferred sources have no artifact binding, catalog row, generated dataset page, or CI extraction
+The deferred source has no artifact binding, catalog row, generated dataset page, or CI extraction
 job.
 
 ## Excluded candidates
