@@ -7,7 +7,7 @@ secrets:
 steps:
   - label: General tests
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1.14:
           version: "1.12"
       - JuliaCI/julia-test#v1:
           test_args: "general"
@@ -15,7 +15,7 @@ steps:
 
   - label: JET tests
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1.14:
           version: "1.12"
       - JuliaCI/julia-test#v1:
           test_args: "jet"
@@ -23,7 +23,7 @@ steps:
 
   - label: Tyler tests
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1.14:
           version: "1.12"
       - JuliaCI/julia-test#v1:
           test_args: "tyler"
@@ -34,7 +34,7 @@ steps:
   - label: Docs
     branches: "!dependabot/*"
     plugins:
-      - JuliaCI/julia#v1:
+      - QuantumSavory/julia#v1.14:
           version: "1.12"
     secrets:
       DOCUMENTER_KEY: DOCUMENTER_KEY_CommunicationNetworkDatasets
