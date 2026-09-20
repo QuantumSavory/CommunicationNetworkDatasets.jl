@@ -18,7 +18,7 @@ Tyler = "e170d443-b9d6-418a-9ee8-061e966341ef"
 CommunicationNetworkDatasetsTylerExt = ["Makie", "Tyler"]
 
 [compat]
-CSV = "0.10.14"
+CSV = "0.10.14, 1.0"
 DataFrames = "1"
 Graphs = "1.4"
 LazyArtifacts = "1.11"
